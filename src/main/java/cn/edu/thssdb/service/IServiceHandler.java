@@ -1,8 +1,11 @@
 package cn.edu.thssdb.service;
 
+import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.plan.impl.CreateDatabasePlan;
+import cn.edu.thssdb.plan.impl.DropDatabasePlan;
+import cn.edu.thssdb.plan.impl.UseDatabasePlan;
 import cn.edu.thssdb.rpc.thrift.ConnectReq;
 import cn.edu.thssdb.rpc.thrift.ConnectResp;
 import cn.edu.thssdb.rpc.thrift.DisconnectReq;
@@ -52,10 +55,11 @@ public class IServiceHandler implements IService.Iface {
     }
     // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
+    Manager manager = Manager.getInstance();
+
     switch (plan.getType()) {
       case CREATE_DB:
         System.out.println("[DEBUG] " + plan);
-        Manager manager = Manager.getInstance();
         CreateDatabasePlan createPlan = (CreateDatabasePlan) plan;
         try {
           manager.createDatabaseIfNotExists(createPlan.getDatabaseName());
@@ -66,10 +70,24 @@ public class IServiceHandler implements IService.Iface {
         }
       case DROP_DB:
         System.out.println("Drop database success");
-        return new ExecuteStatementResp(StatusUtil.success(), false);
+
+        DropDatabasePlan dropPlan = (DropDatabasePlan) plan;
+        try {
+          manager.deleteDatabase(dropPlan.getDatabaseName());
+          return new ExecuteStatementResp(StatusUtil.success("Drop success"), false);
+        } catch (KeyNotExistException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
       case USE_DB:
         System.out.println("Use database success");
-        return new ExecuteStatementResp(StatusUtil.success("tesatds"), false);
+
+        UseDatabasePlan usePlan = (UseDatabasePlan) plan;
+        try {
+          manager.switchDatabase(usePlan.getDatabaseName());
+          return new ExecuteStatementResp(StatusUtil.success("Use success"), false);
+        } catch (KeyNotExistException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
       default:
     }
     return null;

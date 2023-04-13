@@ -1,6 +1,7 @@
 package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.DatabaseExistException;
+import cn.edu.thssdb.exception.KeyNotExistException;
 
 import javax.xml.crypto.Data;
 import java.util.HashMap;
@@ -8,6 +9,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Manager {
   private HashMap<String, Database> databases;
+
+  private String currentDatabaseName;
+
+  public Database getCurrentDatabase() {
+    return databases.get(currentDatabaseName);
+  }
   private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public static Manager getInstance() {
@@ -20,20 +27,27 @@ public class Manager {
   }
 
   public void createDatabaseIfNotExists(String databaseName) {
-    // TODO
     if (databases.containsKey(databaseName))
       throw new DatabaseExistException(databaseName);
-    // TODO: add throw
+
     Database newDatabase = new Database(databaseName);
     databases.put(databaseName, newDatabase);
   }
 
-  private void deleteDatabase() {
-    // TODO
+  public void deleteDatabase(String databaseName) {
+    if (!databases.containsKey(databaseName)) {
+      throw new KeyNotExistException();
+    }
+
+    databases.remove(databaseName);
   }
 
-  public void switchDatabase() {
-    // TODO
+  public void switchDatabase(String databaseName) {
+    if (!databases.containsKey(databaseName)) {
+      throw new KeyNotExistException();
+    }
+
+    currentDatabaseName = databaseName;
   }
 
   private static class ManagerHolder {
