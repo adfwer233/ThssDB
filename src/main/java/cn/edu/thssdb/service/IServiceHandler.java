@@ -53,6 +53,12 @@ public class IServiceHandler implements IService.Iface {
       case CREATE_DB:
         System.out.println("[DEBUG] " + plan);
         return new ExecuteStatementResp(StatusUtil.success(), false);
+      case DROP_DB:
+        System.out.println("Drop database success");
+        return new ExecuteStatementResp(StatusUtil.success(), false);
+      case USE_DB:
+        System.out.println("Use database success");
+        return new ExecuteStatementResp(StatusUtil.success("tesatds"), false);
       default:
     }
     return null;

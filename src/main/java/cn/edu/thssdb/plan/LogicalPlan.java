@@ -15,5 +15,7 @@ public abstract class LogicalPlan {
   public enum LogicalPlanType {
     // TODO: add more LogicalPlanType
     CREATE_DB,
+    DROP_DB,
+    USE_DB
   }
 }
