@@ -22,6 +22,10 @@ public class ThssDB {
 
   private Manager manager;
 
+  public Manager getManager() {
+    return manager;
+  }
+
   public static ThssDB getInstance() {
     return ThssDBHolder.INSTANCE;
   }
