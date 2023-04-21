@@ -1,9 +1,12 @@
 package cn.edu.thssdb.service;
 
+import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
+import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.plan.impl.CreateDatabasePlan;
+import cn.edu.thssdb.plan.impl.CreateTablePlan;
 import cn.edu.thssdb.plan.impl.DropDatabasePlan;
 import cn.edu.thssdb.plan.impl.UseDatabasePlan;
 import cn.edu.thssdb.rpc.thrift.ConnectReq;
@@ -16,13 +19,17 @@ import cn.edu.thssdb.rpc.thrift.GetTimeReq;
 import cn.edu.thssdb.rpc.thrift.GetTimeResp;
 import cn.edu.thssdb.rpc.thrift.IService;
 import cn.edu.thssdb.rpc.thrift.Status;
+import cn.edu.thssdb.schema.Column;
+import cn.edu.thssdb.schema.Database;
 import cn.edu.thssdb.schema.Manager;
+import cn.edu.thssdb.schema.Table;
 import cn.edu.thssdb.server.ThssDB;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.StatusUtil;
 import org.apache.thrift.TException;
 
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IServiceHandler implements IService.Iface {
@@ -88,7 +95,27 @@ public class IServiceHandler implements IService.Iface {
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
+      case CREATE_TABLE:
+        CreateTablePlan createTablePlan = (CreateTablePlan) plan;
+        try {
+          Database currentDatabase = manager.getCurrentDatabase();
+
+          if (currentDatabase == null)
+            throw new NoCurrentDatabaseException();
+          List<Column> columnList = createTablePlan.getColumns();
+          System.out.println(columnList.size());
+
+          Column[] columnsArray = columnList.stream().toArray(Column[]::new);
+          String tmpString = createTablePlan.getTableName();
+          currentDatabase.create(createTablePlan.getTableName(), columnsArray);
+          return new ExecuteStatementResp(StatusUtil.success("Create table success"), false);
+        } catch (KeyNotExistException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (NoCurrentDatabaseException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
       default:
+        System.out.println("Not Implemented");
     }
     return null;
   }

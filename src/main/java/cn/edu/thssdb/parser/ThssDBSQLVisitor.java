@@ -20,10 +20,17 @@ package cn.edu.thssdb.parser;
 
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.plan.impl.CreateDatabasePlan;
+import cn.edu.thssdb.plan.impl.CreateTablePlan;
 import cn.edu.thssdb.plan.impl.DropDatabasePlan;
 import cn.edu.thssdb.plan.impl.UseDatabasePlan;
+import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.sql.SQLBaseVisitor;
 import cn.edu.thssdb.sql.SQLParser;
+import cn.edu.thssdb.type.ColumnType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
 
@@ -40,6 +47,47 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
   @Override
   public LogicalPlan visitUseDbStmt(SQLParser.UseDbStmtContext ctx) {
     return new UseDatabasePlan(ctx.databaseName().getText());
+  }
+
+  @Override
+  public LogicalPlan visitCreateTableStmt(SQLParser.CreateTableStmtContext ctx) {
+    // get tablename
+    String tableName = ctx.tableName().getText();
+
+    // parse column definitions and generate column list
+    List<SQLParser.ColumnDefContext> columnDefs = ctx.columnDef();
+    ArrayList<Column> columns = new ArrayList<Column>();
+    System.out.println(columnDefs.size());
+    System.out.println(columnDefs.get(0).getText());
+
+    List<String> primaryKeys = new ArrayList<String>();
+
+    if (ctx.tableConstraint() != null) {
+      primaryKeys = ctx.tableConstraint().columnName().stream().map(tmpCtx -> tmpCtx.getText().toUpperCase()).collect(Collectors.toList());
+    }
+
+    for(SQLParser.ColumnDefContext columnDef : columnDefs) {
+
+      String columnName = columnDef.columnName().getText();
+      String columnTypeString = columnDef.typeName().getChild(0).getText().toUpperCase();
+      System.out.println(columnTypeString);
+
+      ColumnType type = ColumnType.valueOf(columnTypeString);
+
+      int maxLength = 0;
+      if (type == ColumnType.STRING) {
+        maxLength = Integer.parseInt(columnDef.typeName().NUMERIC_LITERAL().toString());
+      }
+
+      List<String> columnConstraints = columnDef.columnConstraint().stream().map(tmpCtx -> tmpCtx.getText().toUpperCase()).collect(Collectors.toList());
+
+      Column column = new Column(columnName, type, primaryKeys.contains(columnName.toUpperCase()), columnConstraints.contains("NOT NULL") , maxLength);
+      columns.add(column);
+    }
+
+    CreateTablePlan plan = new CreateTablePlan(tableName, columns);
+
+    return plan;
   }
 
   // TODO: parser to more logical plan

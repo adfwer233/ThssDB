@@ -19,12 +19,19 @@ public class Database {
     recover();
   }
 
+  public String getName() {
+    return name;
+  }
+
   private void persist() {
     // TODO
   }
 
-  public void create(String name, Column[] columns) {
-    // TODO
+  public void create(String tableName, Column[] columns) {
+    System.out.println(columns.length);
+
+    Table newTable = new Table(this.name, tableName, columns);
+    this.tables.put(tableName, newTable);
   }
 
   public void drop() {
