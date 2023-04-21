@@ -1,5 +1,6 @@
 package cn.edu.thssdb.schema;
 
+import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 
@@ -17,6 +18,13 @@ public class Database {
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
     recover();
+  }
+
+  public String getTableInfo(String tableName) throws TableNotExistException {
+    if (!tables.containsKey(tableName)) {
+      throw new TableNotExistException();
+    }
+    return tables.get(tableName).getTableInfo();
   }
 
   public String getName() {

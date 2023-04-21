@@ -3,8 +3,7 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Table implements Iterable<Row> {
@@ -16,7 +15,17 @@ public class Table implements Iterable<Row> {
   private int primaryIndex;
 
   public Table(String databaseName, String tableName, Column[] columns) {
-    // TODO
+    this.databaseName = databaseName;
+    this.tableName = tableName;
+    this.columns = new ArrayList<Column>(Arrays.asList(columns));
+  }
+
+  public String getTableInfo() {
+    String res = String.format("Table name: %s \n", tableName);
+    for (Column column: columns) {
+      res = res.concat(String.format("%s \n", column.toString()));
+    }
+    return res;
   }
 
   private void recover() {

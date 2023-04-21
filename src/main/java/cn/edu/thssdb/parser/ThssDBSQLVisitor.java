@@ -19,10 +19,7 @@
 package cn.edu.thssdb.parser;
 
 import cn.edu.thssdb.plan.LogicalPlan;
-import cn.edu.thssdb.plan.impl.CreateDatabasePlan;
-import cn.edu.thssdb.plan.impl.CreateTablePlan;
-import cn.edu.thssdb.plan.impl.DropDatabasePlan;
-import cn.edu.thssdb.plan.impl.UseDatabasePlan;
+import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.sql.SQLBaseVisitor;
 import cn.edu.thssdb.sql.SQLParser;
@@ -63,10 +60,13 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     List<String> primaryKeys = new ArrayList<String>();
 
     if (ctx.tableConstraint() != null) {
-      primaryKeys = ctx.tableConstraint().columnName().stream().map(tmpCtx -> tmpCtx.getText().toUpperCase()).collect(Collectors.toList());
+      primaryKeys =
+          ctx.tableConstraint().columnName().stream()
+              .map(tmpCtx -> tmpCtx.getText().toUpperCase())
+              .collect(Collectors.toList());
     }
 
-    for(SQLParser.ColumnDefContext columnDef : columnDefs) {
+    for (SQLParser.ColumnDefContext columnDef : columnDefs) {
 
       String columnName = columnDef.columnName().getText();
       String columnTypeString = columnDef.typeName().getChild(0).getText().toUpperCase();
@@ -79,15 +79,31 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
         maxLength = Integer.parseInt(columnDef.typeName().NUMERIC_LITERAL().toString());
       }
 
-      List<String> columnConstraints = columnDef.columnConstraint().stream().map(tmpCtx -> tmpCtx.getText().toUpperCase()).collect(Collectors.toList());
+      List<String> columnConstraints =
+          columnDef.columnConstraint().stream()
+              .map(tmpCtx -> tmpCtx.getText().toUpperCase())
+              .collect(Collectors.toList());
 
-      Column column = new Column(columnName, type, primaryKeys.contains(columnName.toUpperCase()), columnConstraints.contains("NOT NULL") , maxLength);
+      System.out.println(columnConstraints);
+
+      Column column =
+          new Column(
+              columnName,
+              type,
+              primaryKeys.contains(columnName.toUpperCase()),
+              columnConstraints.contains("NOTNULL"),
+              maxLength);
       columns.add(column);
     }
 
     CreateTablePlan plan = new CreateTablePlan(tableName, columns);
 
     return plan;
+  }
+
+  @Override
+  public LogicalPlan visitShowTableStmt(SQLParser.ShowTableStmtContext ctx) {
+    return new ShowTablePlan(ctx.tableName().getText());
   }
 
   // TODO: parser to more logical plan
