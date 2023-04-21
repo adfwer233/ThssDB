@@ -42,7 +42,11 @@ public class Database {
     this.tables.put(tableName, newTable);
   }
 
-  public void drop() {
+  public void drop(String tableName) throws TableNotExistException {
+    if (!tables.containsKey(tableName)) {
+      throw new TableNotExistException();
+    }
+    this.tables.remove(tableName);
     // TODO
   }
 

@@ -22,7 +22,7 @@ public class Table implements Iterable<Row> {
 
   public String getTableInfo() {
     String res = String.format("Table name: %s \n", tableName);
-    for (Column column: columns) {
+    for (Column column : columns) {
       res = res.concat(String.format("%s \n", column.toString()));
     }
     return res;
