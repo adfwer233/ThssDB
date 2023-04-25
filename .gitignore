@@ -1,2 +1,9 @@
-.idea\
-target\
+.idea/
+target/
+thssDB/
+.DS_Store
+src/.DS_Store
+src/main/.DS_Store
+src/main/java/.DS_Store
+src/main/java/cn/.DS_Store
+src/main/java/cn/edu/.DS_Store
