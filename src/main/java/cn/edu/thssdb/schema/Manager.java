@@ -2,6 +2,7 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
+import cn.edu.thssdb.exception.TableNotExistException;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -19,6 +20,14 @@ public class Manager {
 
   public static Manager getInstance() {
     return Manager.ManagerHolder.INSTANCE;
+  }
+
+  public String showDb() {
+    String res = "";
+    for (Database db : databases.values ()) {
+      res += db.getName () + ","; }
+    if (!res.isEmpty ()) { res = res.substring (0, res.length () - 1); }
+    return res;
   }
 
   public Manager() {

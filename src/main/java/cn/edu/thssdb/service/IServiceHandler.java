@@ -102,7 +102,9 @@ public class IServiceHandler implements IService.Iface {
           Column[] columnsArray = columnList.stream().toArray(Column[]::new);
           String tmpString = createTablePlan.getTableName();
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
-          return new ExecuteStatementResp(StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())), false);
+          return new ExecuteStatementResp(
+              StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())),
+              false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (NoCurrentDatabaseException e) {
@@ -114,7 +116,7 @@ public class IServiceHandler implements IService.Iface {
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
         try {
           Database currentDatabase = manager.getCurrentDatabase();
-          if(currentDatabase == null) throw new NoCurrentDatabaseException();
+          if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(res), false);
         } catch (NoCurrentDatabaseException e) {
@@ -122,6 +124,13 @@ public class IServiceHandler implements IService.Iface {
         } catch (TableNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
+      case SHOW_DB:
+        System.out.println("Show databases success");
+
+        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
+        String res = Manager.getInstance().showDb();
+        return new ExecuteStatementResp(StatusUtil.success(res),false);
+
       default:
         System.out.println("Not Implemented");
     }

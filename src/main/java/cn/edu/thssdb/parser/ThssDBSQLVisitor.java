@@ -106,5 +106,9 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     return new ShowTablePlan(ctx.tableName().getText());
   }
 
+  public LogicalPlan visitShowDbStmt(SQLParser.ShowDbStmtContext ctx){
+    return new ShowDatabasePlan(ctx.K_DATABASES().getText());
+  }
+
   // TODO: parser to more logical plan
 }
