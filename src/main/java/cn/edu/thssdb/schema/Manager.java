@@ -2,7 +2,9 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
+import cn.edu.thssdb.utils.Global;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -21,15 +23,64 @@ public class Manager {
     return Manager.ManagerHolder.INSTANCE;
   }
 
+  public void persist() {
+    try {
+      File managerFile = new File(Manager.getManagerDirPath());
+      System.out.println(Manager.getManagerDataFilePath());
+      System.out.println(managerFile.getAbsolutePath());
+      if (!managerFile.exists())
+        managerFile.mkdirs();
+
+      FileOutputStream fileOutputStream = new FileOutputStream(Manager.getManagerDataFilePath());
+      OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+      for (Database database: this.databases.values()) {
+        outputStreamWriter.write(database.getName() + "\n");
+        System.out.println("persist " + database.getName());
+      }
+      outputStreamWriter.close();
+      fileOutputStream.close();
+    } catch (Exception e) {
+      System.out.println("manager.persist " + e);
+    }
+  }
+
+  public void recover() {
+    File managerDataFile = new File(Manager.getManagerDataFilePath());
+    if (!managerDataFile.isFile()) return;
+    try {
+      FileInputStream fileInputStream = new FileInputStream(managerDataFile);
+      InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+      BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        System.out.println("recover database name: " + line);
+        createDatabaseIfNotExists(line);
+        Database database = databases.get(line);
+        database.recover();
+      }
+      bufferedReader.close();
+      inputStreamReader.close();
+      fileInputStream.close();
+
+    } catch (Exception e) {
+
+    }
+  }
+
   public Manager() {
     databases = new HashMap<String, Database>();
+    this.recover();
     // TODO
   }
 
   public void createDatabaseIfNotExists(String databaseName) {
     if (databases.containsKey(databaseName)) throw new DatabaseExistException(databaseName);
+    System.out.println("running here");
 
     Database newDatabase = new Database(databaseName);
+    if (databases == null)
+      System.out.println("databases is null");
     databases.put(databaseName, newDatabase);
   }
 
@@ -53,5 +104,13 @@ public class Manager {
     private static final Manager INSTANCE = new Manager();
 
     private ManagerHolder() {}
+  }
+
+  public static String getManagerDirPath(){
+    return Global.DBMS_PATH + File.separator + "data";
+  }
+
+  public static String getManagerDataFilePath(){
+    return Global.DBMS_PATH + File.separator + "data" + File.separator + "manager";
   }
 }
