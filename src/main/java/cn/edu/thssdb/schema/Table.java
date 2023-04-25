@@ -83,7 +83,13 @@ public class Table implements Iterable<Row> {
   }
 
   public String getTableFolderPath() {
-    return Global.DBMS_PATH + File.separator + "data" + File.separator + databaseName + File.separator + "tables";
+    return Global.DBMS_PATH
+        + File.separator
+        + "data"
+        + File.separator
+        + databaseName
+        + File.separator
+        + "tables";
   }
 
   public String getTablePath() {

@@ -28,7 +28,13 @@ public class Column implements Comparable<Column> {
 
   public static Column createColumnFromMeta(String columnMeta) {
     String[] parseRes = columnMeta.split(",");
-    Column res = new Column(parseRes[0], ColumnType.valueOf(parseRes[1]), Boolean.parseBoolean(parseRes[2]), Boolean.parseBoolean(parseRes[3]), Integer.parseInt(parseRes[4]));
+    Column res =
+        new Column(
+            parseRes[0],
+            ColumnType.valueOf(parseRes[1]),
+            Boolean.parseBoolean(parseRes[2]),
+            Boolean.parseBoolean(parseRes[3]),
+            Integer.parseInt(parseRes[4]));
     return res;
   }
 }

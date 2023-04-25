@@ -66,7 +66,7 @@ dropTableStmt :
     K_DROP K_TABLE ( K_IF K_EXISTS )? tableName ;
 
 showDbStmt :
-    K_SHOW K_DATABASES databaseName;
+    K_SHOW K_DATABASES;
 
 quitStmt :
     K_QUIT;

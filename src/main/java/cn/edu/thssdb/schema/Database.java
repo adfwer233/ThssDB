@@ -8,7 +8,6 @@ import cn.edu.thssdb.utils.Global;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Database {
@@ -40,14 +39,13 @@ public class Database {
     for (Table table : tables.values()) {
       String tableDirPath = table.getTableFolderPath();
       File tableDir = new File(tableDirPath);
-      if (!tableDir.exists())
-        tableDir.mkdirs();
+      if (!tableDir.exists()) tableDir.mkdirs();
 
       String filePath = table.getTableMetaPath();
       try {
         FileOutputStream fileOutputStream = new FileOutputStream(filePath);
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-        for (Column column: table.getColumns()) {
+        for (Column column : table.getColumns()) {
           outputStreamWriter.write(column.toString() + "\n");
         }
         outputStreamWriter.close();
@@ -87,8 +85,7 @@ public class Database {
     if (files == null) return;
 
     for (File file : files) {
-      if (!file.isFile() || !file.getName().endsWith(Global.META_SUFFIX))
-        continue;
+      if (!file.isFile() || !file.getName().endsWith(Global.META_SUFFIX)) continue;
       String tableName = file.getName().replace(Global.META_SUFFIX, "");
       try {
         InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
@@ -117,10 +114,11 @@ public class Database {
     // TODO
   }
 
-  public String getDatabaseDirPath(){
+  public String getDatabaseDirPath() {
     return Global.DBMS_PATH + File.separator + "data" + File.separator + this.name;
   }
-  public String getDatabaseTableFolderPath(){
+
+  public String getDatabaseTableFolderPath() {
     return this.getDatabaseDirPath() + File.separator + "tables";
   }
 }

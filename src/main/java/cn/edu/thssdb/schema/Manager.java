@@ -2,9 +2,9 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
-import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.utils.Global;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -25,9 +25,12 @@ public class Manager {
 
   public String showDb() {
     String res = "";
-    for (Database db : databases.values ()) {
-      res += db.getName () + ","; }
-    if (!res.isEmpty ()) { res = res.substring (0, res.length () - 1); }
+    for (Database db : databases.values()) {
+      res += db.getName() + ",";
+    }
+    if (!res.isEmpty()) {
+      res = res.substring(0, res.length() - 1);
+    }
     return res;
   }
 
@@ -36,12 +39,11 @@ public class Manager {
       File managerFile = new File(Manager.getManagerDirPath());
       System.out.println(Manager.getManagerDataFilePath());
       System.out.println(managerFile.getAbsolutePath());
-      if (!managerFile.exists())
-        managerFile.mkdirs();
+      if (!managerFile.exists()) managerFile.mkdirs();
 
       FileOutputStream fileOutputStream = new FileOutputStream(Manager.getManagerDataFilePath());
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-      for (Database database: this.databases.values()) {
+      for (Database database : this.databases.values()) {
         outputStreamWriter.write(database.getName() + "\n");
         System.out.println("persist " + database.getName());
       }
@@ -110,11 +112,11 @@ public class Manager {
     private ManagerHolder() {}
   }
 
-  public static String getManagerDirPath(){
+  public static String getManagerDirPath() {
     return Global.DBMS_PATH + File.separator + "data";
   }
 
-  public static String getManagerDataFilePath(){
+  public static String getManagerDataFilePath() {
     return Global.DBMS_PATH + File.separator + "data" + File.separator + "manager";
   }
 }

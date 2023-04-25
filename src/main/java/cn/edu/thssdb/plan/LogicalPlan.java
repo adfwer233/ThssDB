@@ -19,8 +19,7 @@ public abstract class LogicalPlan {
     USE_DB,
     CREATE_TABLE,
     SHOW_TABLE,
-    SHOW_DB
-    SHOW_TABLE,
+    SHOW_DB,
     DROP_TABLE,
   }
 }

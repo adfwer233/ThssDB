@@ -59,8 +59,7 @@ public class IServiceHandler implements IService.Iface {
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
     Manager manager = Manager.getInstance();
 
-    if (manager == null)
-      System.out.println("manager is null");
+    if (manager == null) System.out.println("manager is null");
 
     switch (plan.getType()) {
       case CREATE_DB:
@@ -109,7 +108,9 @@ public class IServiceHandler implements IService.Iface {
           String tmpString = createTablePlan.getTableName();
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
           currentDatabase.persist();
-          return new ExecuteStatementResp(StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())), false);
+          return new ExecuteStatementResp(
+              StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())),
+              false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (NoCurrentDatabaseException e) {
@@ -144,7 +145,7 @@ public class IServiceHandler implements IService.Iface {
 
         ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
         String res = Manager.getInstance().showDb();
-        return new ExecuteStatementResp(StatusUtil.success(res),false);
+        return new ExecuteStatementResp(StatusUtil.success(res), false);
 
       default:
         System.out.println("Not Implemented");
