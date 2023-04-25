@@ -59,12 +59,17 @@ public class IServiceHandler implements IService.Iface {
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
     Manager manager = Manager.getInstance();
 
+    if (manager == null)
+      System.out.println("manager is null");
+
     switch (plan.getType()) {
       case CREATE_DB:
         System.out.println("[DEBUG] " + plan);
         CreateDatabasePlan createPlan = (CreateDatabasePlan) plan;
         try {
           manager.createDatabaseIfNotExists(createPlan.getDatabaseName());
+          manager.persist();
+          System.out.println("create success");
           return new ExecuteStatementResp(StatusUtil.success("Create Success"), false);
         } catch (Exception e) {
           System.out.print(e);
@@ -76,6 +81,7 @@ public class IServiceHandler implements IService.Iface {
         DropDatabasePlan dropPlan = (DropDatabasePlan) plan;
         try {
           manager.deleteDatabase(dropPlan.getDatabaseName());
+          manager.persist();
           return new ExecuteStatementResp(StatusUtil.success("Drop success"), false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -102,6 +108,7 @@ public class IServiceHandler implements IService.Iface {
           Column[] columnsArray = columnList.stream().toArray(Column[]::new);
           String tmpString = createTablePlan.getTableName();
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
+          currentDatabase.persist();
           return new ExecuteStatementResp(StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())), false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

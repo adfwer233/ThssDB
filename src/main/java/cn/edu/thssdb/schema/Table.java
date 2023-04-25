@@ -1,8 +1,10 @@
 package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.index.BPlusTree;
+import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -17,7 +19,11 @@ public class Table implements Iterable<Row> {
   public Table(String databaseName, String tableName, Column[] columns) {
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.columns = new ArrayList<Column>(Arrays.asList(columns));
+    this.columns = new ArrayList(Arrays.asList(columns));
+  }
+
+  public ArrayList<Column> getColumns() {
+    return columns;
   }
 
   public String getTableInfo() {
@@ -74,5 +80,17 @@ public class Table implements Iterable<Row> {
   @Override
   public Iterator<Row> iterator() {
     return new TableIterator(this);
+  }
+
+  public String getTableFolderPath() {
+    return Global.DBMS_PATH + File.separator + "data" + File.separator + databaseName + File.separator + "tables";
+  }
+
+  public String getTablePath() {
+    return getTableFolderPath() + File.separator + tableName;
+  }
+
+  public String getTableMetaPath() {
+    return getTablePath() + Global.META_SUFFIX;
   }
 }
