@@ -21,5 +21,9 @@ public abstract class LogicalPlan {
     SHOW_TABLE,
     SHOW_DB,
     DROP_TABLE,
+    DELETE,
+    COMPARER,
+    CONDITION,
+    MULTIPLE_CONDITION
   }
 }

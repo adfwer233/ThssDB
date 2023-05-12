@@ -18,12 +18,17 @@
  */
 package cn.edu.thssdb.parser;
 
+import cn.edu.thssdb.exception.TypeNotMatchException;
 import cn.edu.thssdb.plan.LogicalPlan;
+import cn.edu.thssdb.plan.condition.ComparerPlan;
+import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
+import cn.edu.thssdb.plan.condition.SingleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.sql.SQLBaseVisitor;
 import cn.edu.thssdb.sql.SQLParser;
 import cn.edu.thssdb.type.ColumnType;
+import cn.edu.thssdb.type.ComparerType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,6 +118,89 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
   @Override
   public LogicalPlan visitDropTableStmt(SQLParser.DropTableStmtContext ctx) {
     return new DropTablePlan(ctx.tableName().getText());
+  }
+
+  @Override
+  public LogicalPlan visitDeleteStmt(SQLParser.DeleteStmtContext ctx) {
+    // get tableName
+    String tableName = ctx.tableName().getText();
+
+    if (ctx.K_WHERE() == null) {
+      System.out.println("Exception: Delete without where");
+    }
+    // 递归获得Condition
+    MultipleConditionPlan whereCond = null;
+    if(ctx.multipleCondition() != null) {
+      whereCond = visitMultipleCondition(ctx.multipleCondition());
+    }
+    return new DeletePlan(tableName, whereCond);
+  }
+
+  @Override
+  public ComparerPlan visitComparer(SQLParser.ComparerContext ctx) {
+    if (ctx.columnFullName() != null) {
+      String tableName = null;
+      if (ctx.columnFullName().tableName() != null) {
+        tableName = ctx.columnFullName().tableName().IDENTIFIER().getText();
+      }
+      String columnName = ctx.columnFullName().columnName().IDENTIFIER().getText();
+      return new ComparerPlan(ComparerType.COLUMN, tableName, columnName);
+    } else if (ctx.literalValue() != null) {
+      String literalValue = "null";
+      if (ctx.literalValue().NUMERIC_LITERAL() != null) {
+        literalValue = ctx.literalValue().NUMERIC_LITERAL().getText();
+        return new ComparerPlan(ComparerType.NUMBER, literalValue);
+      } else if (ctx.literalValue().STRING_LITERAL() != null) {
+        literalValue = ctx.literalValue().STRING_LITERAL().getText();
+        return new ComparerPlan(ComparerType.STRING, literalValue);
+      }
+      return new ComparerPlan(ComparerType.NULL, literalValue);
+    }
+    return null;
+  }
+
+  @Override
+  public ComparerPlan visitExpression(SQLParser.ExpressionContext ctx) {
+    if (ctx.comparer() != null) {
+      return (ComparerPlan) visit(ctx.comparer());
+    } else if (ctx.expression().size() == 1) {
+      return (ComparerPlan) visit(ctx.getChild(1));
+    } else {
+      ComparerPlan comparerPlan1 = (ComparerPlan) visit(ctx.getChild(0));
+      ComparerPlan comparerPlan2 = (ComparerPlan) visit(ctx.getChild(2));
+
+      if ((comparerPlan1.type != ComparerType.NUMBER && comparerPlan1.type != ComparerType.COLUMN) ||
+              (comparerPlan2.type != ComparerType.NUMBER && comparerPlan2.type != ComparerType.COLUMN)) {
+        throw new TypeNotMatchException(comparerPlan1.type, ComparerType.NUMBER);
+      }
+
+      ComparerPlan newComparerPlan = new ComparerPlan(comparerPlan1, comparerPlan2, ctx.getChild(1).getText());
+      newComparerPlan.type = ComparerType.NUMBER;
+
+      return newComparerPlan;
+    }
+  }
+
+  @Override
+  public SingleConditionPlan visitCondition(SQLParser.ConditionContext ctx) {
+    ComparerPlan comparerPlan1 = (ComparerPlan) visit(ctx.getChild(0));
+    ComparerPlan comparerPlan2 = (ComparerPlan) visit(ctx.getChild(2));
+    String op = ctx.getChild(1).getText();
+
+    return new SingleConditionPlan(comparerPlan1, comparerPlan2, op);
+  }
+
+  @Override
+  public MultipleConditionPlan visitMultipleCondition(SQLParser.MultipleConditionContext ctx) {
+    if (ctx.getChildCount() == 1) {
+      return new MultipleConditionPlan((SingleConditionPlan) visit(ctx.getChild(0)));
+    }
+
+    MultipleConditionPlan m1 = (MultipleConditionPlan) visit(ctx.getChild(0));
+    MultipleConditionPlan m2 = (MultipleConditionPlan) visit(ctx.getChild(2));
+    String op = ctx.getChild(1).getText();
+
+    return new MultipleConditionPlan(m1, m2, op);
   }
 
   // TODO: parser to more logical plan
