@@ -21,5 +21,6 @@ public abstract class LogicalPlan {
     SHOW_TABLE,
     SHOW_DB,
     DROP_TABLE,
+    INSERT,
   }
 }

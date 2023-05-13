@@ -3,6 +3,7 @@ package cn.edu.thssdb.service;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.exception.TableNotExistException;
+import cn.edu.thssdb.impl.InsertImpl;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.plan.impl.*;
@@ -143,10 +144,18 @@ public class IServiceHandler implements IService.Iface {
       case SHOW_DB:
         System.out.println("Show databases success");
 
-        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
+//        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
         String res = Manager.getInstance().showDb();
         return new ExecuteStatementResp(StatusUtil.success(res), false);
+      case INSERT:
+        InsertPlan insertPlan = (InsertPlan) plan;
+        try {
+          InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase());
+          return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
 
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
       default:
         System.out.println("Not Implemented");
     }

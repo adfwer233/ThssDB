@@ -1,6 +1,7 @@
 package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.index.BPlusTree;
+import cn.edu.thssdb.index.BPlusTreeIterator;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
@@ -17,6 +18,8 @@ public class Table implements Iterable<Row> {
   private int primaryIndex;
 
   public Table(String databaseName, String tableName, Column[] columns) {
+    primaryIndex = 0;
+    index = new BPlusTree<>();
     this.databaseName = databaseName;
     this.tableName = tableName;
     this.columns = new ArrayList(Arrays.asList(columns));
@@ -38,8 +41,20 @@ public class Table implements Iterable<Row> {
     // TODO
   }
 
-  public void insert() {
-    // TODO
+  public void insert(ArrayList<Entry> entriesToInsert) {
+    System.out.println("insert start");
+    index.put(entriesToInsert.get(primaryIndex), new Row(entriesToInsert));
+    System.out.println("insert success");
+  }
+
+  public String printTable() {
+    String res = "";
+    BPlusTreeIterator<Entry, Row> it = index.iterator();
+    while(it.hasNext()) {
+      Pair<Entry, Row> pair = it.next();
+      res = res.concat(pair.right.toString() + ' ');
+    }
+    return res;
   }
 
   public void delete() {

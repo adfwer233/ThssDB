@@ -22,6 +22,18 @@ public class Column implements Comparable<Column> {
     return name.compareTo(e.name);
   }
 
+  public String getName() {
+    return name;
+  }
+
+  public ColumnType getType() {
+    return type;
+  }
+
+  public int getMaxLength() {
+    return maxLength;
+  }
+
   public String toString() {
     return name + ',' + type + ',' + primary + ',' + notNull + ',' + maxLength;
   }

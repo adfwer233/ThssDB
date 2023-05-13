@@ -80,6 +80,7 @@ public class Manager {
 
   public Manager() {
     databases = new HashMap<String, Database>();
+    recover();
     // TODO
   }
 

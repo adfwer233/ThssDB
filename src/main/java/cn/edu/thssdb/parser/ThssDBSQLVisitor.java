@@ -107,7 +107,7 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
   }
 
   public LogicalPlan visitShowDbStmt(SQLParser.ShowDbStmtContext ctx) {
-    return new ShowDatabasePlan(ctx.K_DATABASES().getText());
+    return new ShowDatabasePlan(ctx.getText());
   }
 
   @Override
@@ -115,5 +115,22 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     return new DropTablePlan(ctx.tableName().getText());
   }
 
+  @Override
+  public LogicalPlan visitInsertStmt(SQLParser.InsertStmtContext ctx) {
+    List<SQLParser.ColumnNameContext> columnNameCtxList = ctx.columnName();
+    List<SQLParser.ValueEntryContext> valueEntryContextList = ctx.valueEntry();
+
+    List<String> columnNameList = columnNameCtxList.stream().map(x -> x.getText()).collect(Collectors.toList());
+
+    List<List<String>> valueEntryList = new ArrayList();
+    for (SQLParser.ValueEntryContext valueEntryContext : valueEntryContextList) {
+      valueEntryList.add(valueEntryContext.literalValue().stream().map(x -> x.getText()).collect(Collectors.toList()));
+    }
+
+    InsertPlan plan = new InsertPlan(ctx.tableName().getText() ,columnNameList, valueEntryList);
+    return plan;
+  }
+
   // TODO: parser to more logical plan
+
 }

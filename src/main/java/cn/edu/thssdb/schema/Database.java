@@ -121,4 +121,12 @@ public class Database {
   public String getDatabaseTableFolderPath() {
     return this.getDatabaseDirPath() + File.separator + "tables";
   }
+
+  public Boolean isTableExist(String tableName) {
+    return tables.containsKey(tableName);
+  }
+
+  public Table getTable(String tableName) {
+    return tables.get(tableName);
+  }
 }
