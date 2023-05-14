@@ -49,8 +49,4 @@ public class Column implements Comparable<Column> {
             Integer.parseInt(parseRes[4]));
     return res;
   }
-
-  public String getName() {
-    return name;
-  }
 }
