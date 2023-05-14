@@ -1,11 +1,13 @@
 package cn.edu.thssdb.service;
 
+import cn.edu.thssdb.exception.DeleteWithoutWhereException;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.impl.InsertImpl;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
+import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.rpc.thrift.ConnectReq;
 import cn.edu.thssdb.rpc.thrift.ConnectResp;
@@ -17,13 +19,12 @@ import cn.edu.thssdb.rpc.thrift.GetTimeReq;
 import cn.edu.thssdb.rpc.thrift.GetTimeResp;
 import cn.edu.thssdb.rpc.thrift.IService;
 import cn.edu.thssdb.rpc.thrift.Status;
-import cn.edu.thssdb.schema.Column;
-import cn.edu.thssdb.schema.Database;
-import cn.edu.thssdb.schema.Manager;
+import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.StatusUtil;
 import org.apache.thrift.TException;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -154,6 +155,34 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
 
         } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
+      case DELETE:
+        System.out.println("DELETE");
+        DeletePlan deletePlan = (DeletePlan) plan;
+        try {
+          Database currentDataBase = manager.getCurrentDatabase();
+          if (currentDataBase == null) throw new NoCurrentDatabaseException();
+          Table currentTable = currentDataBase.getTables().get(deletePlan.getTableName());
+          ArrayList<String> columnNames = new ArrayList<>();
+          ArrayList<Column> columns = currentTable.getColumns();
+          for (Column c : columns) {
+            columnNames.add(c.getName());
+          }
+          MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
+          if (whereCond == null) {
+            throw new DeleteWithoutWhereException();
+          } else {
+            for (Row row : currentTable) {
+              if (whereCond.ConditionVerify(row, columnNames)) {
+                currentDataBase.DeleteRow(row, currentTable.tableName);
+                return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
+              }
+            }
+          }
+        } catch (NoCurrentDatabaseException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (DeleteWithoutWhereException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       default:

@@ -1,5 +1,6 @@
 package cn.edu.thssdb.schema;
 
+import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.index.BPlusTreeIterator;
 import cn.edu.thssdb.utils.Global;
@@ -57,8 +58,11 @@ public class Table implements Iterable<Row> {
     return res;
   }
 
-  public void delete() {
-    // TODO
+  public void delete(Row row) {
+    if(!this.containsRow(row)) {
+      throw new KeyNotExistException();
+    }
+    this.index.remove(row.getEntries().get(this.primaryIndex));
   }
 
   public void update() {
@@ -107,6 +111,10 @@ public class Table implements Iterable<Row> {
         + "tables";
   }
 
+  private Boolean containsRow(Row row){
+    return this.index.contains(row.getEntries().get(this.primaryIndex));
+  }
+
   public String getTablePath() {
     return getTableFolderPath() + File.separator + tableName;
   }
@@ -115,3 +123,4 @@ public class Table implements Iterable<Row> {
     return getTablePath() + Global.META_SUFFIX;
   }
 }
+

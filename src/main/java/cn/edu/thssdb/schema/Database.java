@@ -69,7 +69,10 @@ public class Database {
       throw new TableNotExistException();
     }
     this.tables.remove(tableName);
-    // TODO
+  }
+
+  public void DeleteRow(Row row, String TableName) {
+    this.tables.get(TableName).delete(row);
   }
 
   public String select(QueryTable[] queryTables) {
@@ -120,6 +123,10 @@ public class Database {
 
   public String getDatabaseTableFolderPath() {
     return this.getDatabaseDirPath() + File.separator + "tables";
+  }
+
+  public HashMap<String, Table> getTables() {
+    return tables;
   }
 
   public Boolean isTableExist(String tableName) {
