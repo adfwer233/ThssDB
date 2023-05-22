@@ -6,7 +6,7 @@ import cn.edu.thssdb.index.BPlusTreeIterator;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -16,10 +16,20 @@ public class Table implements Iterable<Row> {
   public String tableName;
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
-  private int primaryIndex;
+  private int primaryIndex = 0;
 
   public Table(String databaseName, String tableName, Column[] columns) {
-    primaryIndex = 0;
+    // TODO: add primary index
+    for (int i = 0; i < columns.length; i++) {
+      if (columns[i].isPrimary()) {
+        primaryIndex = i;
+      }
+    }
+
+    if (primaryIndex == 0) {
+      columns[0].setPrimary();
+    }
+
     index = new BPlusTree<>();
     this.databaseName = databaseName;
     this.tableName = tableName;
@@ -38,8 +48,16 @@ public class Table implements Iterable<Row> {
     return res;
   }
 
-  private void recover() {
-    // TODO
+  public void recover() {
+    System.out.println("table recover " + getTablePath());
+    ArrayList<Row> rows = deserialize();
+    for (Row row : rows) {
+      index.put(row.getEntries().get(primaryIndex), row);
+    }
+  }
+
+  public void persist() {
+    serialize();
   }
 
   public void insert(ArrayList<Entry> entriesToInsert) {
@@ -70,11 +88,59 @@ public class Table implements Iterable<Row> {
   }
 
   private void serialize() {
-    // TODO
+    try {
+      File tableFolder = new File(getTableFolderPath());
+      if (!tableFolder.exists()) tableFolder.mkdirs();
+
+      File tableFile = new File(getTablePath());
+      if (!tableFile.exists()) tableFile.createNewFile();
+
+      // TODO: paging and multi-thread writing
+      FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+
+      for (Row row : this) {
+        System.out.println("writing row " + getTablePath());
+        objectOutputStream.writeObject(row);
+      }
+
+      objectOutputStream.close();
+      fileOutputStream.close();
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
   }
 
   private ArrayList<Row> deserialize() {
-    // TODO
+
+    try {
+      File tableFolder = new File(getTableFolderPath());
+      if (!tableFolder.exists()) tableFolder.mkdirs();
+
+      File tableFile = new File(getTablePath());
+      if (!tableFile.exists()) return new ArrayList<>();
+
+      // TODO: paging and multi-thread reading
+      FileInputStream fileInputStream = new FileInputStream(tableFile);
+      ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+      ArrayList<Row> res = new ArrayList<>();
+      System.out.println("read ready " + getTablePath());
+      Object inputObject;
+      while (fileInputStream.available() > 0) {
+        System.out.println("read object " + getTablePath());
+        inputObject = objectInputStream.readObject();
+        res.add((Row) inputObject);
+      }
+
+      objectInputStream.close();
+      fileInputStream.close();
+
+      return res;
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+
     return null;
   }
 
