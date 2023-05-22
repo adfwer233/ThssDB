@@ -62,12 +62,12 @@ public class QueryTable implements Iterator<Row> {
 
   public String toString() {
     StringBuffer buffer = new StringBuffer("Query Result\n");
-    for (Column col: columns) {
+    for (Column col : columns) {
       buffer.append(col.getName() + '\t');
     }
     buffer.append('\n');
-    for(Row row : rows) {
-      for (Entry entry: row.getEntries()) {
+    for (Row row : rows) {
+      for (Entry entry : row.getEntries()) {
         buffer.append(entry);
         buffer.append('\t');
       }

@@ -201,7 +201,8 @@ public class IServiceHandler implements IService.Iface {
       case SELECT:
         SelectPlan selectPlan = (SelectPlan) plan;
         try {
-          QueryTable queryTable = SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase());
+          QueryTable queryTable =
+              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase());
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

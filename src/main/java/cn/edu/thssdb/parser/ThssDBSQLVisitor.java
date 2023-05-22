@@ -237,7 +237,7 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
       onConditionPlan = visitMultipleCondition(ctx.tableQuery(0).multipleCondition());
     }
     if (ctx.multipleCondition() != null) {
-       whereConditionPlan = visitMultipleCondition(ctx.multipleCondition());
+      whereConditionPlan = visitMultipleCondition(ctx.multipleCondition());
     }
 
     return new SelectPlan(attributeList, targetTableList, onConditionPlan, whereConditionPlan);

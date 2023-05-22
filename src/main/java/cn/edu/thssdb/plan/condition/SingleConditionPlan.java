@@ -45,7 +45,6 @@ public class SingleConditionPlan extends LogicalPlan {
       expr2.ComparerRes(row, columnName);
       Object value2 = expr2.getValue(row, columnName);
 
-
       if (value1 == null || value2 == null) {
         if (comparator.equals("=")) {
           return value1 == value2;
@@ -96,7 +95,8 @@ public class SingleConditionPlan extends LogicalPlan {
 
       return conditionResult;
     } catch (Exception e) {
-      System.out.println("Get Error in ConditionItem.evaluate()\n" + e.getMessage() + ' ' + e.getClass());
+      System.out.println(
+          "Get Error in ConditionItem.evaluate()\n" + e.getMessage() + ' ' + e.getClass());
       return null;
     }
   }
