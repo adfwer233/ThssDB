@@ -1,6 +1,7 @@
 package cn.edu.thssdb.query;
 
 import cn.edu.thssdb.schema.Column;
+import cn.edu.thssdb.schema.Entry;
 import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.schema.Table;
 
@@ -20,8 +21,9 @@ public class QueryTable implements Iterator<Row> {
     }
     this.columns = new ArrayList<>();
     for (Column col : table.getColumns()) {
-      col.setName(table.tableName + "." + col.getName());
-      columns.add(col);
+      Column tmp = new Column(col.getName());
+      tmp.setName(table.tableName + "." + col.getName());
+      columns.add(tmp);
     }
   }
 
@@ -56,5 +58,21 @@ public class QueryTable implements Iterator<Row> {
         newRows.add(tmp);
       }
     }
+  }
+
+  public String toString() {
+    StringBuffer buffer = new StringBuffer("Query Result\n");
+    for (Column col: columns) {
+      buffer.append(col.getName() + '\t');
+    }
+    buffer.append('\n');
+    for(Row row : rows) {
+      for (Entry entry: row.getEntries()) {
+        buffer.append(entry);
+        buffer.append('\t');
+      }
+      buffer.append('\n');
+    }
+    return buffer.toString();
   }
 }

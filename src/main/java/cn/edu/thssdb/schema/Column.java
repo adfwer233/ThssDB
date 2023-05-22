@@ -9,6 +9,9 @@ public class Column implements Comparable<Column> {
   private boolean notNull;
   private int maxLength;
 
+  public Column(String name) {
+    this.name = name;
+  }
   public Column(String name, ColumnType type, boolean primary, boolean notNull, int maxLength) {
     this.name = name;
     this.type = type;
