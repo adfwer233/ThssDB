@@ -187,9 +187,9 @@ public class IServiceHandler implements IService.Iface {
             for (Row row : currentTable) {
               if (whereCond.ConditionVerify(row, columnNames)) {
                 currentDataBase.DeleteRow(row, currentTable.tableName);
-                return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
               }
             }
+            return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
           }
         } catch (NoCurrentDatabaseException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
