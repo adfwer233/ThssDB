@@ -17,6 +17,7 @@ public class Table implements Iterable<Row> {
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
   private int primaryIndex = 0;
+
   public Table(String databaseName, String tableName, Column[] columns) {
     // TODO: add primary index
     for (int i = 0; i < columns.length; i++) {
@@ -89,18 +90,16 @@ public class Table implements Iterable<Row> {
   private void serialize() {
     try {
       File tableFolder = new File(getTableFolderPath());
-      if (!tableFolder.exists())
-        tableFolder.mkdirs();
+      if (!tableFolder.exists()) tableFolder.mkdirs();
 
       File tableFile = new File(getTablePath());
-      if (!tableFile.exists())
-        tableFile.createNewFile();
+      if (!tableFile.exists()) tableFile.createNewFile();
 
       // TODO: paging and multi-thread writing
       FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
       ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 
-      for (Row row: this) {
+      for (Row row : this) {
         System.out.println("writing row " + getTablePath());
         objectOutputStream.writeObject(row);
       }
@@ -116,13 +115,10 @@ public class Table implements Iterable<Row> {
 
     try {
       File tableFolder = new File(getTableFolderPath());
-      if (!tableFolder.exists())
-        tableFolder.mkdirs();
+      if (!tableFolder.exists()) tableFolder.mkdirs();
 
       File tableFile = new File(getTablePath());
-      if (!tableFile.exists())
-        return new ArrayList<>();
-
+      if (!tableFile.exists()) return new ArrayList<>();
 
       // TODO: paging and multi-thread reading
       FileInputStream fileInputStream = new FileInputStream(tableFile);
@@ -131,10 +127,10 @@ public class Table implements Iterable<Row> {
       ArrayList<Row> res = new ArrayList<>();
       System.out.println("read ready " + getTablePath());
       Object inputObject;
-      while(fileInputStream.available() > 0) {
+      while (fileInputStream.available() > 0) {
         System.out.println("read object " + getTablePath());
         inputObject = objectInputStream.readObject();
-        res.add((Row)inputObject);
+        res.add((Row) inputObject);
       }
 
       objectInputStream.close();

@@ -23,6 +23,7 @@ public class Row implements Serializable {
   public void appendEntries(ArrayList<Entry> entries) {
     this.entries.addAll(entries);
   }
+
   public String toString() {
     if (entries == null) return "EMPTY";
     StringJoiner sj = new StringJoiner(", ");

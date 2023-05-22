@@ -20,7 +20,7 @@ public class Database {
     this.name = name;
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
-//    recover();
+    //    recover();
   }
 
   public String getTableInfo(String tableName) throws TableNotExistException {
