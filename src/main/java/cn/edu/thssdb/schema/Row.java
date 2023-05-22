@@ -8,6 +8,11 @@ public class Row implements Serializable {
   private static final long serialVersionUID = -5809782578272943999L;
   protected ArrayList<Entry> entries;
 
+  public Row(Row other) {
+    this.entries = new ArrayList<>();
+    this.entries.addAll(other.getEntries());
+  }
+
   public Row() {
     this.entries = new ArrayList<>();
   }
