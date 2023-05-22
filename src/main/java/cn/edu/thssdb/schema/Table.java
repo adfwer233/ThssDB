@@ -51,7 +51,7 @@ public class Table implements Iterable<Row> {
   public String printTable() {
     String res = "";
     BPlusTreeIterator<Entry, Row> it = index.iterator();
-    while(it.hasNext()) {
+    while (it.hasNext()) {
       Pair<Entry, Row> pair = it.next();
       res = res.concat(pair.right.toString() + ' ');
     }
@@ -59,7 +59,7 @@ public class Table implements Iterable<Row> {
   }
 
   public void delete(Row row) {
-    if(!this.containsRow(row)) {
+    if (!this.containsRow(row)) {
       throw new KeyNotExistException();
     }
     this.index.remove(row.getEntries().get(this.primaryIndex));
@@ -111,7 +111,7 @@ public class Table implements Iterable<Row> {
         + "tables";
   }
 
-  private Boolean containsRow(Row row){
+  private Boolean containsRow(Row row) {
     return this.index.contains(row.getEntries().get(this.primaryIndex));
   }
 
@@ -123,4 +123,3 @@ public class Table implements Iterable<Row> {
     return getTablePath() + Global.META_SUFFIX;
   }
 }
-

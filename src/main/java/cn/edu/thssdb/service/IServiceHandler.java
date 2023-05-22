@@ -145,7 +145,7 @@ public class IServiceHandler implements IService.Iface {
       case SHOW_DB:
         System.out.println("Show databases success");
 
-//        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
+        //        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
         String res = Manager.getInstance().showDb();
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:

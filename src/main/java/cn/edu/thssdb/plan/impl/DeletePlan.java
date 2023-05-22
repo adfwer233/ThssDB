@@ -5,20 +5,20 @@ import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 
 public class DeletePlan extends LogicalPlan {
 
-    private String tableName;
-    private MultipleConditionPlan whereCond;
+  private String tableName;
+  private MultipleConditionPlan whereCond;
 
-    public DeletePlan(String tableName, MultipleConditionPlan whereCond) {
-        super(LogicalPlanType.DELETE);
-        this.whereCond = whereCond;
-        this.tableName = tableName;
-    }
+  public DeletePlan(String tableName, MultipleConditionPlan whereCond) {
+    super(LogicalPlanType.DELETE);
+    this.whereCond = whereCond;
+    this.tableName = tableName;
+  }
 
-    public String getTableName() {
-        return tableName;
-    }
+  public String getTableName() {
+    return tableName;
+  }
 
-    public MultipleConditionPlan getWhereCond() {
-        return whereCond;
-    }
+  public MultipleConditionPlan getWhereCond() {
+    return whereCond;
+  }
 }

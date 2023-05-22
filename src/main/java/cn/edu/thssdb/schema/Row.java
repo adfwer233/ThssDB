@@ -2,7 +2,6 @@ package cn.edu.thssdb.schema;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.StringJoiner;
 
 public class Row implements Serializable {

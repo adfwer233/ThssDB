@@ -125,14 +125,18 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     List<SQLParser.ColumnNameContext> columnNameCtxList = ctx.columnName();
     List<SQLParser.ValueEntryContext> valueEntryContextList = ctx.valueEntry();
 
-    List<String> columnNameList = columnNameCtxList.stream().map(x -> x.getText()).collect(Collectors.toList());
+    List<String> columnNameList =
+        columnNameCtxList.stream().map(x -> x.getText()).collect(Collectors.toList());
 
     List<List<String>> valueEntryList = new ArrayList();
     for (SQLParser.ValueEntryContext valueEntryContext : valueEntryContextList) {
-      valueEntryList.add(valueEntryContext.literalValue().stream().map(x -> x.getText()).collect(Collectors.toList()));
+      valueEntryList.add(
+          valueEntryContext.literalValue().stream()
+              .map(x -> x.getText())
+              .collect(Collectors.toList()));
     }
 
-    InsertPlan plan = new InsertPlan(ctx.tableName().getText() ,columnNameList, valueEntryList);
+    InsertPlan plan = new InsertPlan(ctx.tableName().getText(), columnNameList, valueEntryList);
     return plan;
   }
 
@@ -146,7 +150,7 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     }
     // 递归获得Condition
     MultipleConditionPlan whereCond = null;
-    if(ctx.multipleCondition() != null) {
+    if (ctx.multipleCondition() != null) {
       whereCond = visitMultipleCondition(ctx.multipleCondition());
     }
     return new DeletePlan(tableName, whereCond);
@@ -185,12 +189,14 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
       ComparerPlan comparerPlan1 = (ComparerPlan) visit(ctx.getChild(0));
       ComparerPlan comparerPlan2 = (ComparerPlan) visit(ctx.getChild(2));
 
-      if ((comparerPlan1.type != ComparerType.NUMBER && comparerPlan1.type != ComparerType.COLUMN) ||
-              (comparerPlan2.type != ComparerType.NUMBER && comparerPlan2.type != ComparerType.COLUMN)) {
+      if ((comparerPlan1.type != ComparerType.NUMBER && comparerPlan1.type != ComparerType.COLUMN)
+          || (comparerPlan2.type != ComparerType.NUMBER
+              && comparerPlan2.type != ComparerType.COLUMN)) {
         throw new TypeNotMatchException(comparerPlan1.type, ComparerType.NUMBER);
       }
 
-      ComparerPlan newComparerPlan = new ComparerPlan(comparerPlan1, comparerPlan2, ctx.getChild(1).getText());
+      ComparerPlan newComparerPlan =
+          new ComparerPlan(comparerPlan1, comparerPlan2, ctx.getChild(1).getText());
       newComparerPlan.type = ComparerType.NUMBER;
 
       return newComparerPlan;
