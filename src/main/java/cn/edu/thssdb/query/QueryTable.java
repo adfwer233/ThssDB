@@ -6,6 +6,8 @@ import java.util.Iterator;
 
 public class QueryTable implements Iterator<Row> {
 
+
+
   QueryTable() {
     // TODO
   }
