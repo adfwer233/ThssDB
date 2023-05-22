@@ -20,7 +20,7 @@ public class Database {
     this.name = name;
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
-    recover();
+//    recover();
   }
 
   public String getTableInfo(String tableName) throws TableNotExistException {
@@ -41,6 +41,7 @@ public class Database {
       File tableDir = new File(tableDirPath);
       if (!tableDir.exists()) tableDir.mkdirs();
 
+      // persist table meta
       String filePath = table.getTableMetaPath();
       try {
         FileOutputStream fileOutputStream = new FileOutputStream(filePath);
@@ -54,6 +55,9 @@ public class Database {
         System.out.println("database persist " + e);
         // TODO: add IO exception
       }
+
+      // serialize table data
+      table.persist();
     }
   }
 
@@ -106,6 +110,10 @@ public class Database {
         }
 
         Table newTable = new Table(this.name, tableName, columns.stream().toArray(Column[]::new));
+
+        // Recover the new table data from table file
+        newTable.recover();
+
         this.tables.put(tableName, newTable);
       } catch (Exception e) {
 

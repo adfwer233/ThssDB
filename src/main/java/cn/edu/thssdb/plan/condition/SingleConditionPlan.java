@@ -79,7 +79,7 @@ public class SingleConditionPlan extends LogicalPlan {
         case "<=":
           conditionResult = result <= 0;
           break;
-        case "==":
+        case "=":
           conditionResult = result == 0;
           break;
         case "<>":
