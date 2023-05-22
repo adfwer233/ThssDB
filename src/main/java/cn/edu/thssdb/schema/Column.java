@@ -34,6 +34,14 @@ public class Column implements Comparable<Column> {
     return maxLength;
   }
 
+  public boolean isPrimary() {
+    return primary;
+  }
+
+  public void setPrimary() {
+    primary = true;
+  }
+
   public String toString() {
     return name + ',' + type + ',' + primary + ',' + notNull + ',' + maxLength;
   }

@@ -3,6 +3,7 @@ package cn.edu.thssdb.plan.impl;
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.schema.Column;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CreateTablePlan extends LogicalPlan {

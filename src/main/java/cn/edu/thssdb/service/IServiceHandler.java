@@ -61,6 +61,9 @@ public class IServiceHandler implements IService.Iface {
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
     Manager manager = Manager.getInstance();
 
+    // TODO: maintain a map from session id to current database
+    long currentSessionId = req.getSessionId();
+
     if (manager == null) System.out.println("manager is null");
 
     switch (plan.getType()) {
@@ -144,8 +147,6 @@ public class IServiceHandler implements IService.Iface {
         }
       case SHOW_DB:
         System.out.println("Show databases success");
-
-        //        ShowDatabasePlan showDatabasePlan = (ShowDatabasePlan) plan;
         String res = Manager.getInstance().showDb();
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:
@@ -153,7 +154,6 @@ public class IServiceHandler implements IService.Iface {
         try {
           InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase());
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
-
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }

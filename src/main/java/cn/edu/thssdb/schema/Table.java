@@ -16,10 +16,19 @@ public class Table implements Iterable<Row> {
   public String tableName;
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
-  private int primaryIndex;
-
+  private int primaryIndex = 0;
   public Table(String databaseName, String tableName, Column[] columns) {
-    primaryIndex = 0;
+    // TODO: add primary index
+    for (int i = 0; i < columns.length; i++) {
+      if (columns[i].isPrimary()) {
+        primaryIndex = i;
+      }
+    }
+
+    if (primaryIndex == 0) {
+      columns[0].setPrimary();
+    }
+
     index = new BPlusTree<>();
     this.databaseName = databaseName;
     this.tableName = tableName;
