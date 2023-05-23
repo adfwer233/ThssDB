@@ -7,7 +7,6 @@ import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.schema.Database;
 import cn.edu.thssdb.schema.Row;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +75,7 @@ public class SelectImpl {
       // get the selected index of columns
       ArrayList<Integer> selectedColumnsIndex = new ArrayList<>();
       for (int i = 0; i < attributeList.size(); i++) {
-        for (int j = 0; j < columnNames.size();j ++) {
+        for (int j = 0; j < columnNames.size(); j++) {
           if (attributeList.get(i).equals(columnNames.get(j))) {
             selectedColumnsIndex.add(j);
             selectedColumns.add(targetTable.columns.get(j));
@@ -89,12 +88,12 @@ public class SelectImpl {
       targetTable.columns = selectedColumns;
 
       // select the columns in rows
-      for (Row row: targetTable.rows) {
+      for (Row row : targetTable.rows) {
         row.selectEntry(selectedColumnsIndex);
       }
     }
 
-//    targetTable.rows = selectedRows;
+    //    targetTable.rows = selectedRows;
 
     return targetTable;
   }

@@ -1,7 +1,6 @@
 package cn.edu.thssdb.schema;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.StringJoiner;
 
@@ -17,7 +16,7 @@ public class Row implements Serializable {
   // only save the given indices
   public void selectEntry(ArrayList<Integer> index) {
     ArrayList<Entry> newEntries = new ArrayList<>();
-    for (Integer i: index) {
+    for (Integer i : index) {
       newEntries.add(entries.get(i));
     }
     this.entries = newEntries;
