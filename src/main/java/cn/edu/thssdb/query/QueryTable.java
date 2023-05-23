@@ -44,8 +44,9 @@ public class QueryTable implements Iterator<Row> {
 
     String rightTableName = rightTable.tableName;
     for (Column col : rightTable.getColumns()) {
-      col.setName(rightTableName + "." + col.getName());
-      newColumns.add(col);
+      Column newCol = new Column(col.getName());
+      newCol.setName(rightTableName + "." + col.getName());
+      newColumns.add(newCol);
     }
 
     // TODO: add blocking or multi-thread here to speed up join
@@ -58,6 +59,9 @@ public class QueryTable implements Iterator<Row> {
         newRows.add(tmp);
       }
     }
+    System.out.println(newRows);
+    this.rows = newRows;
+    this.columns = newColumns;
   }
 
   public String toString() {
