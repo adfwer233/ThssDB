@@ -16,8 +16,15 @@ public class Manager {
   private HashMap<Long, String> currentDatabaseName = new HashMap<>();
 
 
-  public Database getCurrentDatabase(Long sessionId) {
-    return databases.get(currentDatabaseName.get(sessionId));
+  public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
+//    return databases.get(currentDatabaseName.get(sessionId));
+    try {
+      lock.readLock().lock();
+      System.out.println(currentDatabaseName.get(sessionId));
+      return getDatabaseHandler(currentDatabaseName.get(sessionId), read, write);
+    } finally {
+      lock.readLock().unlock();
+    }
   }
 
   public Database.DatabaseHandler getDatabaseHandler(String dbName, Boolean read, Boolean write) {

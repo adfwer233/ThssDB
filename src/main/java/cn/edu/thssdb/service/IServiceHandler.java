@@ -66,7 +66,7 @@ public class IServiceHandler implements IService.Iface {
 
     if (req.statement.equals("commit;")) {
       try {
-        manager.getCurrentDatabase(currentSessionId).persist();
+        manager.getCurrentDatabase(currentSessionId, false, true).getDatabase().persist();
         return new ExecuteStatementResp(StatusUtil.success("commit success"), false);
       } catch (Exception e) {
         return new ExecuteStatementResp(StatusUtil.fail("commit fail"), false);
@@ -114,9 +114,8 @@ public class IServiceHandler implements IService.Iface {
         }
       case CREATE_TABLE:
         CreateTablePlan createTablePlan = (CreateTablePlan) plan;
-        try {
-          Database currentDatabase = manager.getCurrentDatabase(currentSessionId);
-
+        try(Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
           System.out.println(columnList.size());
@@ -134,11 +133,13 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (TableNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SHOW_TABLE:
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
-        try {
-          Database currentDatabase = manager.getCurrentDatabase(currentSessionId);
+        try(Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, true, false)) {
+          Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(res), false);
@@ -146,15 +147,19 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (TableNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail("Exception: " + e.getMessage()), false);
         }
       case DROP_TABLE:
         DropTablePlan dropTablePlan = (DropTablePlan) plan;
-        try {
-          Database currentDataBase = manager.getCurrentDatabase(currentSessionId);
+        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           currentDataBase.drop(dropTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(dropTablePlan.getTableName()), false);
         } catch (NoCurrentDatabaseException | TableNotExistException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SHOW_DB:
@@ -163,8 +168,8 @@ public class IServiceHandler implements IService.Iface {
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
-        try {
-          InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase(currentSessionId));
+        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+          InsertImpl.handleInsertPlan(insertPlan, currentDatabaseHandler.getDatabase());
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -172,8 +177,8 @@ public class IServiceHandler implements IService.Iface {
       case DELETE:
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
-        try {
-          Database currentDataBase = manager.getCurrentDatabase(currentSessionId);
+        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           Table currentTable = currentDataBase.getTables().get(deletePlan.getTableName());
           ArrayList<String> columnNames = new ArrayList<>();
@@ -196,12 +201,14 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (DeleteWithoutWhereException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SELECT:
         SelectPlan selectPlan = (SelectPlan) plan;
-        try {
+        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, true, false)) {
           QueryTable queryTable =
-              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase(currentSessionId));
+              SelectImpl.handleSelectPlan(selectPlan, currentDatabaseHandler.getDatabase());
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

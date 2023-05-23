@@ -35,13 +35,19 @@ public class Database {
       }
     }
 
+    public Database getDatabase() {
+      return database;
+    }
+
     @Override
     public void close() throws Exception {
       if (hasReadLock) {
         this.database.lock.readLock().unlock();
+        hasReadLock = false;
       }
       if (hasWriteLock) {
         this.database.lock.writeLock().unlock();
+        hasWriteLock = false;
       }
     }
   }
