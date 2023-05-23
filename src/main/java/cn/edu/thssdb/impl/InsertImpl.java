@@ -15,13 +15,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InsertImpl {
-  public static void handleInsertPlan(InsertPlan plan, Database currentDB)
+  public static void handleInsertPlan(InsertPlan plan, Database currentDB, Long sessionId)
       throws TableNotExistException, AttributeValueNotMatchException,
           AttributeNameNotExistException, StringEntryTooLongException {
     if (!currentDB.isTableExist(plan.getTableName())) {
       throw new TableNotExistException(plan.getTableName());
     }
-    try (Table.TableHandler tableHandler = currentDB.getTable(plan.getTableName(), false, true)) {
+    try (Table.TableHandler tableHandler = currentDB.getTableForSession(sessionId, plan.getTableName(), false, true)) {
 
       Table table = tableHandler.getTable();
 

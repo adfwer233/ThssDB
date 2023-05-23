@@ -17,6 +17,8 @@ public class Database {
   private HashMap<String, Table> tables;
   ReentrantReadWriteLock lock;
 
+  public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
+
   public class DatabaseHandler implements AutoCloseable {
     private Database database;
     public Boolean hasReadLock;
@@ -179,7 +181,16 @@ public class Database {
     return tables.containsKey(tableName);
   }
 
-  public Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
+  public Table.TableHandler getTableForSession(Long sessionId, String tableName, Boolean read, Boolean write) {
+    if (transactionLockManagers.containsKey(sessionId)) {
+      return transactionLockManagers.get(sessionId).getTableHandler(this, tableName, read, write);
+    }
+    else {
+      // TODO: Exception
+      return getTable(tableName, read, write);
+    }
+  }
+  Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
 
     if (read) {
       return tables.get(tableName).getReadHandler();

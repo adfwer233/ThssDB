@@ -64,12 +64,25 @@ public class IServiceHandler implements IService.Iface {
 
     Manager manager = Manager.getInstance();
 
+    // begin transaction
+    if (req.statement.toLowerCase().equals("begin transaction")) {
+      if (manager.currentSessions.contains(currentSessionId)) {
+        return new ExecuteStatementResp(StatusUtil.fail("This session already in a Transaction"), false);
+      } else {
+        manager.currentSessions.add(currentSessionId);
+        return new ExecuteStatementResp(StatusUtil.success("Transaction begin"), false);
+      }
+    }
+
+    // commit
     if (req.statement.equals("commit;")) {
-      try {
-        manager.getCurrentDatabase(currentSessionId, false, true).getDatabase().persist();
-        return new ExecuteStatementResp(StatusUtil.success("commit success"), false);
-      } catch (Exception e) {
-        return new ExecuteStatementResp(StatusUtil.fail("commit fail"), false);
+      if (!manager.currentSessions.contains(currentSessionId)) {
+        return new ExecuteStatementResp(StatusUtil.fail("This session not in a Transaction now"), false);
+      } else {
+        // TODO: handle lock here
+        manager.currentSessions.remove(currentSessionId);
+        manager.releaseTransactionLocks(currentSessionId);
+        return new ExecuteStatementResp(StatusUtil.success("Transaction end"), false);
       }
     }
 
@@ -169,7 +182,7 @@ public class IServiceHandler implements IService.Iface {
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
-          InsertImpl.handleInsertPlan(insertPlan, currentDatabaseHandler.getDatabase());
+          InsertImpl.handleInsertPlan(insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -180,7 +193,7 @@ public class IServiceHandler implements IService.Iface {
         try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          try (Table.TableHandler tableHandler = currentDataBase.getTable(deletePlan.getTableName(), false, true)) {
+          try (Table.TableHandler tableHandler = currentDataBase.getTableForSession(currentSessionId, deletePlan.getTableName(), false, true)) {
             Table currentTable = tableHandler.getTable();
             ArrayList<String> columnNames = new ArrayList<>();
             ArrayList<Column> columns = currentTable.getColumns();
@@ -210,7 +223,7 @@ public class IServiceHandler implements IService.Iface {
         SelectPlan selectPlan = (SelectPlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, true, false)) {
           QueryTable queryTable =
-              SelectImpl.handleSelectPlan(selectPlan, currentDatabaseHandler.getDatabase());
+              SelectImpl.handleSelectPlan(selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

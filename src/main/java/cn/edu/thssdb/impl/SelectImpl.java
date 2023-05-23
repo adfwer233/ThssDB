@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class SelectImpl {
-  public static QueryTable handleSelectPlan(SelectPlan plan, Database db) {
+  public static QueryTable handleSelectPlan(SelectPlan plan, Database db, Long sessionId) {
 
     // TODO: Parallelism, use multi-thread to verify the conditions.
 
@@ -21,11 +21,11 @@ public class SelectImpl {
 
     List<String> targetTableList = plan.getTableNameList();
     QueryTable targetTable;
-    try (Table.TableHandler tableHandler = db.getTable(targetTableList.get(0), true, false)) {
+    try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
        targetTable = new QueryTable(tableHandler.getTable());
     }
     for (int i = 1; i < targetTableList.size(); i++) {
-      try (Table.TableHandler tableHandler = db.getTable(targetTableList.get(0), true, false)) {
+      try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
         targetTable.joinWithTable(tableHandler.getTable());
       }
     }

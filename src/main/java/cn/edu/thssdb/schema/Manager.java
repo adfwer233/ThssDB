@@ -7,6 +7,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import javax.xml.crypto.Data;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -14,10 +15,9 @@ public class Manager {
   private HashMap<String, Database> databases;
 
   private HashMap<Long, String> currentDatabaseName = new HashMap<>();
-
+  public ArrayList<Long> currentSessions = new ArrayList<>();
 
   public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
-//    return databases.get(currentDatabaseName.get(sessionId));
     try {
       lock.readLock().lock();
       System.out.println(currentDatabaseName.get(sessionId));
@@ -42,6 +42,14 @@ public class Manager {
   }
 
   private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+  public void releaseTransactionLocks(Long sessionId) {
+    for (Database database :databases.values()) {
+      if (database.transactionLockManagers.containsKey(sessionId)) {
+        database.transactionLockManagers.get(sessionId).releaseLocks();
+      }
+    }
+  }
 
   public static Manager getInstance() {
     return Manager.ManagerHolder.INSTANCE;
@@ -139,6 +147,12 @@ public class Manager {
       }
       System.out.println(sessionId);
       currentDatabaseName.put(sessionId, databaseName);
+
+      Database db = databases.get(databaseName);
+      if (!db.transactionLockManagers.containsKey(sessionId)) {
+        System.out.println("init transaction manager");
+        db.transactionLockManagers.put(sessionId, new TransactionLockManager());
+      }
     } finally {
       lock.writeLock().unlock();
     }
