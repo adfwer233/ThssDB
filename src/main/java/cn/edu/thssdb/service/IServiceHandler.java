@@ -59,23 +59,37 @@ public class IServiceHandler implements IService.Iface {
       return new ExecuteStatementResp(
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
+    // TODO: maintain a map from session id to current database
+    long currentSessionId = req.getSessionId();
 
     Manager manager = Manager.getInstance();
 
+    // begin transaction
+    if (req.statement.toLowerCase().equals("begin transaction")) {
+      if (manager.currentSessions.contains(currentSessionId)) {
+        return new ExecuteStatementResp(
+            StatusUtil.fail("This session already in a Transaction"), false);
+      } else {
+        manager.currentSessions.add(currentSessionId);
+        return new ExecuteStatementResp(StatusUtil.success("Transaction begin"), false);
+      }
+    }
+
+    // commit
     if (req.statement.equals("commit;")) {
-      try {
-        manager.getCurrentDatabase().persist();
-        return new ExecuteStatementResp(StatusUtil.success("commit success"), false);
-      } catch (Exception e) {
-        return new ExecuteStatementResp(StatusUtil.fail("commit fail"), false);
+      if (!manager.currentSessions.contains(currentSessionId)) {
+        return new ExecuteStatementResp(
+            StatusUtil.fail("This session not in a Transaction now"), false);
+      } else {
+        // TODO: handle lock here
+        manager.currentSessions.remove(currentSessionId);
+        manager.releaseTransactionLocks(currentSessionId);
+        return new ExecuteStatementResp(StatusUtil.success("Transaction end"), false);
       }
     }
 
     // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
-
-    // TODO: maintain a map from session id to current database
-    long currentSessionId = req.getSessionId();
 
     if (manager == null) System.out.println("manager is null");
 
@@ -108,16 +122,16 @@ public class IServiceHandler implements IService.Iface {
 
         UseDatabasePlan usePlan = (UseDatabasePlan) plan;
         try {
-          manager.switchDatabase(usePlan.getDatabaseName());
+          manager.switchDatabase(currentSessionId, usePlan.getDatabaseName());
           return new ExecuteStatementResp(StatusUtil.success("Use success"), false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case CREATE_TABLE:
         CreateTablePlan createTablePlan = (CreateTablePlan) plan;
-        try {
-          Database currentDatabase = manager.getCurrentDatabase();
-
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
           System.out.println(columnList.size());
@@ -135,11 +149,14 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (TableNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SHOW_TABLE:
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
-        try {
-          Database currentDatabase = manager.getCurrentDatabase();
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
+          Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(res), false);
@@ -147,15 +164,20 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (TableNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail("Exception: " + e.getMessage()), false);
         }
       case DROP_TABLE:
         DropTablePlan dropTablePlan = (DropTablePlan) plan;
-        try {
-          Database currentDataBase = manager.getCurrentDatabase();
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           currentDataBase.drop(dropTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(dropTablePlan.getTableName()), false);
         } catch (NoCurrentDatabaseException | TableNotExistException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SHOW_DB:
@@ -164,8 +186,10 @@ public class IServiceHandler implements IService.Iface {
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
-        try {
-          InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase());
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
+          InsertImpl.handleInsertPlan(
+              insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -173,22 +197,29 @@ public class IServiceHandler implements IService.Iface {
       case DELETE:
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
-        try {
-          Database currentDataBase = manager.getCurrentDatabase();
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          Table currentTable = currentDataBase.getTables().get(deletePlan.getTableName());
-          ArrayList<String> columnNames = new ArrayList<>();
-          ArrayList<Column> columns = currentTable.getColumns();
-          for (Column c : columns) {
-            columnNames.add(c.getName());
-          }
-          MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
-          if (whereCond == null) {
-            throw new DeleteWithoutWhereException();
-          } else {
-            for (Row row : currentTable) {
-              if (whereCond.ConditionVerify(row, columnNames)) {
-                currentDataBase.DeleteRow(row, currentTable.tableName);
+          try (Table.TableHandler tableHandler =
+              currentDataBase.getTableForSession(
+                  currentSessionId, deletePlan.getTableName(), false, true)) {
+            Table currentTable = tableHandler.getTable();
+            ArrayList<String> columnNames = new ArrayList<>();
+            ArrayList<Column> columns = currentTable.getColumns();
+            for (Column c : columns) {
+              columnNames.add(c.getName());
+            }
+            MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
+            if (whereCond == null) {
+              throw new DeleteWithoutWhereException();
+            } else {
+              for (Row row : currentTable) {
+                if (whereCond.ConditionVerify(row, columnNames)) {
+                  currentDataBase.DeleteRow(row, currentTable.tableName);
+                  return new ExecuteStatementResp(
+                      StatusUtil.success(currentTable.tableName), false);
+                }
               }
             }
             return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
@@ -197,12 +228,16 @@ public class IServiceHandler implements IService.Iface {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (DeleteWithoutWhereException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SELECT:
         SelectPlan selectPlan = (SelectPlan) plan;
-        try {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           QueryTable queryTable =
-              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase());
+              SelectImpl.handleSelectPlan(
+                  selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

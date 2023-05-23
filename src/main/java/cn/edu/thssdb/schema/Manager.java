@@ -5,19 +5,49 @@ import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.utils.Global;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Manager {
   private HashMap<String, Database> databases;
 
-  private String currentDatabaseName;
+  private HashMap<Long, String> currentDatabaseName = new HashMap<>();
+  public ArrayList<Long> currentSessions = new ArrayList<>();
 
-  public Database getCurrentDatabase() {
-    return databases.get(currentDatabaseName);
+  public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
+    try {
+      lock.readLock().lock();
+      System.out.println(currentDatabaseName.get(sessionId));
+      return getDatabaseHandler(currentDatabaseName.get(sessionId), read, write);
+    } finally {
+      lock.readLock().unlock();
+    }
+  }
+
+  public Database.DatabaseHandler getDatabaseHandler(String dbName, Boolean read, Boolean write) {
+    try {
+      lock.readLock().lock();
+      if (write) {
+        return databases.get(dbName).getWriteHandler();
+      } else if (read) {
+        return databases.get(dbName).getReadHandler();
+      }
+    } finally {
+      lock.readLock().unlock();
+    }
+    return null;
   }
 
   private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+
+  public void releaseTransactionLocks(Long sessionId) {
+    for (Database database : databases.values()) {
+      if (database.transactionLockManagers.containsKey(sessionId)) {
+        database.transactionLockManagers.get(sessionId).releaseLocks();
+      }
+    }
+  }
 
   public static Manager getInstance() {
     return Manager.ManagerHolder.INSTANCE;
@@ -81,30 +111,48 @@ public class Manager {
   public Manager() {
     databases = new HashMap<String, Database>();
     recover();
-    // TODO
   }
 
   public void createDatabaseIfNotExists(String databaseName) {
-    if (databases.containsKey(databaseName)) throw new DatabaseExistException(databaseName);
-
-    Database newDatabase = new Database(databaseName);
-    databases.put(databaseName, newDatabase);
+    try {
+      lock.writeLock().lock();
+      if (databases.containsKey(databaseName)) throw new DatabaseExistException(databaseName);
+      Database newDatabase = new Database(databaseName);
+      databases.put(databaseName, newDatabase);
+    } finally {
+      lock.writeLock().unlock();
+    }
   }
 
   public void deleteDatabase(String databaseName) {
-    if (!databases.containsKey(databaseName)) {
-      throw new KeyNotExistException();
+    try {
+      lock.writeLock().lock();
+      if (!databases.containsKey(databaseName)) {
+        throw new KeyNotExistException();
+      }
+      databases.remove(databaseName);
+    } finally {
+      lock.writeLock().unlock();
     }
-
-    databases.remove(databaseName);
   }
 
-  public void switchDatabase(String databaseName) {
-    if (!databases.containsKey(databaseName)) {
-      throw new KeyNotExistException();
-    }
+  public void switchDatabase(Long sessionId, String databaseName) {
+    try {
+      lock.writeLock().lock();
+      if (!databases.containsKey(databaseName)) {
+        throw new KeyNotExistException();
+      }
+      System.out.println(sessionId);
+      currentDatabaseName.put(sessionId, databaseName);
 
-    currentDatabaseName = databaseName;
+      Database db = databases.get(databaseName);
+      if (!db.transactionLockManagers.containsKey(sessionId)) {
+        System.out.println("init transaction manager");
+        db.transactionLockManagers.put(sessionId, new TransactionLockManager());
+      }
+    } finally {
+      lock.writeLock().unlock();
+    }
   }
 
   private static class ManagerHolder {

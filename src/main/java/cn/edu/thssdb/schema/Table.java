@@ -11,12 +11,59 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Table implements Iterable<Row> {
-  ReentrantReadWriteLock lock;
+  ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
   private String databaseName;
   public String tableName;
   public ArrayList<Column> columns;
   public BPlusTree<Entry, Row> index;
   private int primaryIndex = 0;
+
+  // table handler to manage the lock of table
+  public class TableHandler implements AutoCloseable {
+
+    private Table table;
+    public Boolean hasReadLock;
+    public Boolean hasWriteLock;
+
+    public TableHandler(Table table, Boolean read, Boolean write) {
+      this.table = table;
+      this.hasReadLock = read;
+      this.hasWriteLock = write;
+
+      if (read) {
+        table.lock.readLock().lock();
+      }
+
+      if (write) {
+        table.lock.writeLock().lock();
+      }
+    }
+
+    public Table getTable() {
+      return table;
+    }
+
+    @Override
+    public void close() {
+      // only in read committed isolation level, S lock is released when close
+      // in serializable isolation level, S lock is released when the transaction terminates(commit
+      // or abort).
+      if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
+        if (this.hasReadLock) {
+          this.table.lock.readLock().unlock();
+          this.hasReadLock = false;
+        }
+      }
+    }
+  }
+
+  public Table.TableHandler getReadHandler() {
+    return new Table.TableHandler(this, true, false);
+  }
+
+  public Table.TableHandler getWriteHandler() {
+    return new Table.TableHandler(this, false, true);
+  }
 
   public Table(String databaseName, String tableName, Column[] columns) {
     // TODO: add primary index

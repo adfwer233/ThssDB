@@ -16,6 +16,51 @@ public class Database {
   private HashMap<String, Table> tables;
   ReentrantReadWriteLock lock;
 
+  public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
+
+  public class DatabaseHandler implements AutoCloseable {
+    private Database database;
+    public Boolean hasReadLock;
+    public Boolean hasWriteLock;
+
+    public DatabaseHandler(Database database, Boolean read, Boolean write) {
+      this.database = database;
+      this.hasReadLock = read;
+      this.hasWriteLock = write;
+
+      if (read) {
+        this.database.lock.readLock().lock();
+      }
+      if (write) {
+        this.database.lock.writeLock().lock();
+      }
+    }
+
+    public Database getDatabase() {
+      return database;
+    }
+
+    @Override
+    public void close() throws Exception {
+      if (hasReadLock) {
+        this.database.lock.readLock().unlock();
+        hasReadLock = false;
+      }
+      if (hasWriteLock) {
+        this.database.lock.writeLock().unlock();
+        hasWriteLock = false;
+      }
+    }
+  }
+
+  public DatabaseHandler getReadHandler() {
+    return new DatabaseHandler(this, true, false);
+  }
+
+  public DatabaseHandler getWriteHandler() {
+    return new DatabaseHandler(this, false, true);
+  }
+
   public Database(String name) {
     this.name = name;
     this.tables = new HashMap<>();
@@ -132,15 +177,27 @@ public class Database {
     return this.getDatabaseDirPath() + File.separator + "tables";
   }
 
-  public HashMap<String, Table> getTables() {
-    return tables;
-  }
-
   public Boolean isTableExist(String tableName) {
     return tables.containsKey(tableName);
   }
 
-  public Table getTable(String tableName) {
-    return tables.get(tableName);
+  public Table.TableHandler getTableForSession(
+      Long sessionId, String tableName, Boolean read, Boolean write) {
+    if (transactionLockManagers.containsKey(sessionId)) {
+      return transactionLockManagers.get(sessionId).getTableHandler(this, tableName, read, write);
+    } else {
+      // TODO: Exception
+      return getTable(tableName, read, write);
+    }
+  }
+
+  Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
+
+    if (read) {
+      return tables.get(tableName).getReadHandler();
+    } else if (write) {
+      return tables.get(tableName).getWriteHandler();
+    }
+    return null;
   }
 }
