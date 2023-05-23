@@ -22,4 +22,11 @@ public class Global {
   public static final String DBMS_PATH = "thssDB";
 
   public static final String META_SUFFIX = "_meta";
+
+  public enum IsolationLevel {
+    READ_COMMITTED,
+    SERIALIZABLE
+  }
+
+  public static final IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
 }

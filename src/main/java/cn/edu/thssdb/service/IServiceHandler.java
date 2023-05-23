@@ -59,12 +59,14 @@ public class IServiceHandler implements IService.Iface {
       return new ExecuteStatementResp(
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
+    // TODO: maintain a map from session id to current database
+    long currentSessionId = req.getSessionId();
 
     Manager manager = Manager.getInstance();
 
     if (req.statement.equals("commit;")) {
       try {
-        manager.getCurrentDatabase().persist();
+        manager.getCurrentDatabase(currentSessionId).persist();
         return new ExecuteStatementResp(StatusUtil.success("commit success"), false);
       } catch (Exception e) {
         return new ExecuteStatementResp(StatusUtil.fail("commit fail"), false);
@@ -73,9 +75,6 @@ public class IServiceHandler implements IService.Iface {
 
     // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
-
-    // TODO: maintain a map from session id to current database
-    long currentSessionId = req.getSessionId();
 
     if (manager == null) System.out.println("manager is null");
 
@@ -108,7 +107,7 @@ public class IServiceHandler implements IService.Iface {
 
         UseDatabasePlan usePlan = (UseDatabasePlan) plan;
         try {
-          manager.switchDatabase(usePlan.getDatabaseName());
+          manager.switchDatabase(currentSessionId, usePlan.getDatabaseName());
           return new ExecuteStatementResp(StatusUtil.success("Use success"), false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -116,7 +115,7 @@ public class IServiceHandler implements IService.Iface {
       case CREATE_TABLE:
         CreateTablePlan createTablePlan = (CreateTablePlan) plan;
         try {
-          Database currentDatabase = manager.getCurrentDatabase();
+          Database currentDatabase = manager.getCurrentDatabase(currentSessionId);
 
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
@@ -139,7 +138,7 @@ public class IServiceHandler implements IService.Iface {
       case SHOW_TABLE:
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
         try {
-          Database currentDatabase = manager.getCurrentDatabase();
+          Database currentDatabase = manager.getCurrentDatabase(currentSessionId);
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(res), false);
@@ -151,7 +150,7 @@ public class IServiceHandler implements IService.Iface {
       case DROP_TABLE:
         DropTablePlan dropTablePlan = (DropTablePlan) plan;
         try {
-          Database currentDataBase = manager.getCurrentDatabase();
+          Database currentDataBase = manager.getCurrentDatabase(currentSessionId);
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           currentDataBase.drop(dropTablePlan.getTableName());
           return new ExecuteStatementResp(StatusUtil.success(dropTablePlan.getTableName()), false);
@@ -165,7 +164,7 @@ public class IServiceHandler implements IService.Iface {
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
         try {
-          InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase());
+          InsertImpl.handleInsertPlan(insertPlan, manager.getCurrentDatabase(currentSessionId));
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -174,7 +173,7 @@ public class IServiceHandler implements IService.Iface {
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
         try {
-          Database currentDataBase = manager.getCurrentDatabase();
+          Database currentDataBase = manager.getCurrentDatabase(currentSessionId);
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           Table currentTable = currentDataBase.getTables().get(deletePlan.getTableName());
           ArrayList<String> columnNames = new ArrayList<>();
@@ -202,7 +201,7 @@ public class IServiceHandler implements IService.Iface {
         SelectPlan selectPlan = (SelectPlan) plan;
         try {
           QueryTable queryTable =
-              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase());
+              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase(currentSessionId));
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

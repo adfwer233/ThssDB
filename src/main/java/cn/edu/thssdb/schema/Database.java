@@ -4,6 +4,7 @@ import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.utils.Global;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,6 +16,42 @@ public class Database {
   private String name;
   private HashMap<String, Table> tables;
   ReentrantReadWriteLock lock;
+
+  public class DatabaseHandler implements AutoCloseable {
+    private Database database;
+    public Boolean hasReadLock;
+    public Boolean hasWriteLock;
+
+    public DatabaseHandler(Database database, Boolean read, Boolean write) {
+      this.database = database;
+      this.hasReadLock = read;
+      this.hasWriteLock = write;
+
+      if (read) {
+        this.database.lock.readLock().lock();
+      }
+      if (write) {
+        this.database.lock.writeLock().lock();
+      }
+    }
+
+    @Override
+    public void close() throws Exception {
+      if (hasReadLock) {
+        this.database.lock.readLock().unlock();
+      }
+      if (hasWriteLock) {
+        this.database.lock.writeLock().unlock();
+      }
+    }
+  }
+
+  public DatabaseHandler getReadHandler() {
+    return new DatabaseHandler(this, true, false);
+  }
+  public DatabaseHandler getWriteHandler() {
+    return new DatabaseHandler(this, false, true);
+  }
 
   public Database(String name) {
     this.name = name;
