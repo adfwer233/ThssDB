@@ -222,6 +222,7 @@ public class IServiceHandler implements IService.Iface {
                 }
               }
             }
+            return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
           }
         } catch (NoCurrentDatabaseException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
