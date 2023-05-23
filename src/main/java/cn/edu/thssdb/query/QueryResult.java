@@ -17,6 +17,8 @@ public class QueryResult {
     // TODO
     this.index = new ArrayList<>();
     this.attrs = new ArrayList<>();
+
+    for (QueryTable queryTable : queryTables) {}
   }
 
   public static Row combineRow(LinkedList<Row> rows) {

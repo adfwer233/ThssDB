@@ -225,5 +225,23 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     return new MultipleConditionPlan(m1, m2, op);
   }
 
+  @Override
+  public LogicalPlan visitSelectStmt(SQLParser.SelectStmtContext ctx) {
+    List<String> attributeList =
+        ctx.resultColumn().stream().map(x -> x.getText()).collect(Collectors.toList());
+    List<String> targetTableList =
+        ctx.tableQuery(0).tableName().stream().map(x -> x.getText()).collect(Collectors.toList());
+    MultipleConditionPlan whereConditionPlan = null;
+    MultipleConditionPlan onConditionPlan = null;
+    if (ctx.tableQuery(0).multipleCondition() != null) {
+      onConditionPlan = visitMultipleCondition(ctx.tableQuery(0).multipleCondition());
+    }
+    if (ctx.multipleCondition() != null) {
+      whereConditionPlan = visitMultipleCondition(ctx.multipleCondition());
+    }
+
+    return new SelectPlan(attributeList, targetTableList, onConditionPlan, whereConditionPlan);
+  }
+
   // TODO: parser to more logical plan
 }

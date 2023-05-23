@@ -5,10 +5,12 @@ import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.impl.InsertImpl;
+import cn.edu.thssdb.impl.SelectImpl;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
+import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.rpc.thrift.ConnectReq;
 import cn.edu.thssdb.rpc.thrift.ConnectResp;
 import cn.edu.thssdb.rpc.thrift.DisconnectReq;
@@ -194,6 +196,15 @@ public class IServiceHandler implements IService.Iface {
         } catch (NoCurrentDatabaseException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (DeleteWithoutWhereException e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
+      case SELECT:
+        SelectPlan selectPlan = (SelectPlan) plan;
+        try {
+          QueryTable queryTable =
+              SelectImpl.handleSelectPlan(selectPlan, manager.getCurrentDatabase());
+          return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
+        } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       default:

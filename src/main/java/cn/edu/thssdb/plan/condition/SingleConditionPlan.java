@@ -34,6 +34,11 @@ public class SingleConditionPlan extends LogicalPlan {
   public Boolean ConditionVerify(Row row, ArrayList<String> columnName) {
     try {
       int result = 0;
+      System.out.println("compare here");
+      System.out.println(columnName);
+      System.out.println(row);
+      System.out.println(expr1.tableName);
+      System.out.println(expr1.columnName);
       expr1.ComparerRes(row, columnName);
       Object value1 = expr1.getValue(row, columnName);
 
@@ -49,7 +54,6 @@ public class SingleConditionPlan extends LogicalPlan {
           return false;
         }
       }
-
       if ((value1 instanceof String && !(value2 instanceof String))
           || !(value1 instanceof String) && value2 instanceof String) {
         throw new TypeNotMatchException(ComparerType.NUMBER, ComparerType.STRING);
@@ -91,7 +95,8 @@ public class SingleConditionPlan extends LogicalPlan {
 
       return conditionResult;
     } catch (Exception e) {
-      System.out.println("Get Error in ConditionItem.evaluate()\n" + e.getMessage());
+      System.out.println(
+          "Get Error in ConditionItem.evaluate()\n" + e.getMessage() + ' ' + e.getClass());
       return null;
     }
   }

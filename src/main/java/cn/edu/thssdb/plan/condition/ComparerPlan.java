@@ -65,7 +65,7 @@ public class ComparerPlan extends LogicalPlan {
       if (type == ComparerType.COLUMN) {
         int index = -1;
         if (this.tableName != null) {
-          String columnFullName = this.tableName + "_" + this.columnName;
+          String columnFullName = this.tableName + "." + this.columnName;
           index = ColumnName.indexOf(columnFullName);
         }
         if (index == -1) {
