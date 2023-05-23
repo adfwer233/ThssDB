@@ -67,7 +67,8 @@ public class IServiceHandler implements IService.Iface {
     // begin transaction
     if (req.statement.toLowerCase().equals("begin transaction")) {
       if (manager.currentSessions.contains(currentSessionId)) {
-        return new ExecuteStatementResp(StatusUtil.fail("This session already in a Transaction"), false);
+        return new ExecuteStatementResp(
+            StatusUtil.fail("This session already in a Transaction"), false);
       } else {
         manager.currentSessions.add(currentSessionId);
         return new ExecuteStatementResp(StatusUtil.success("Transaction begin"), false);
@@ -77,7 +78,8 @@ public class IServiceHandler implements IService.Iface {
     // commit
     if (req.statement.equals("commit;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
-        return new ExecuteStatementResp(StatusUtil.fail("This session not in a Transaction now"), false);
+        return new ExecuteStatementResp(
+            StatusUtil.fail("This session not in a Transaction now"), false);
       } else {
         // TODO: handle lock here
         manager.currentSessions.remove(currentSessionId);
@@ -127,7 +129,8 @@ public class IServiceHandler implements IService.Iface {
         }
       case CREATE_TABLE:
         CreateTablePlan createTablePlan = (CreateTablePlan) plan;
-        try(Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
@@ -151,7 +154,8 @@ public class IServiceHandler implements IService.Iface {
         }
       case SHOW_TABLE:
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
-        try(Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, true, false)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
@@ -165,7 +169,8 @@ public class IServiceHandler implements IService.Iface {
         }
       case DROP_TABLE:
         DropTablePlan dropTablePlan = (DropTablePlan) plan;
-        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           currentDataBase.drop(dropTablePlan.getTableName());
@@ -181,8 +186,10 @@ public class IServiceHandler implements IService.Iface {
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
-        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
-          InsertImpl.handleInsertPlan(insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
+          InsertImpl.handleInsertPlan(
+              insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -190,10 +197,13 @@ public class IServiceHandler implements IService.Iface {
       case DELETE:
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
-        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          try (Table.TableHandler tableHandler = currentDataBase.getTableForSession(currentSessionId, deletePlan.getTableName(), false, true)) {
+          try (Table.TableHandler tableHandler =
+              currentDataBase.getTableForSession(
+                  currentSessionId, deletePlan.getTableName(), false, true)) {
             Table currentTable = tableHandler.getTable();
             ArrayList<String> columnNames = new ArrayList<>();
             ArrayList<Column> columns = currentTable.getColumns();
@@ -207,7 +217,8 @@ public class IServiceHandler implements IService.Iface {
               for (Row row : currentTable) {
                 if (whereCond.ConditionVerify(row, columnNames)) {
                   currentDataBase.DeleteRow(row, currentTable.tableName);
-                  return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
+                  return new ExecuteStatementResp(
+                      StatusUtil.success(currentTable.tableName), false);
                 }
               }
             }
@@ -221,9 +232,11 @@ public class IServiceHandler implements IService.Iface {
         }
       case SELECT:
         SelectPlan selectPlan = (SelectPlan) plan;
-        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, true, false)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           QueryTable queryTable =
-              SelectImpl.handleSelectPlan(selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+              SelectImpl.handleSelectPlan(
+                  selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

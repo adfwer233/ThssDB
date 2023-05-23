@@ -21,11 +21,13 @@ public class SelectImpl {
 
     List<String> targetTableList = plan.getTableNameList();
     QueryTable targetTable;
-    try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
-       targetTable = new QueryTable(tableHandler.getTable());
+    try (Table.TableHandler tableHandler =
+        db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
+      targetTable = new QueryTable(tableHandler.getTable());
     }
     for (int i = 1; i < targetTableList.size(); i++) {
-      try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
+      try (Table.TableHandler tableHandler =
+          db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
         targetTable.joinWithTable(tableHandler.getTable());
       }
     }

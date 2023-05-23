@@ -46,7 +46,8 @@ public class Table implements Iterable<Row> {
     @Override
     public void close() {
       // only in read committed isolation level, S lock is released when close
-      // in serializable isolation level, S lock is released when the transaction terminates(commit or abort).
+      // in serializable isolation level, S lock is released when the transaction terminates(commit
+      // or abort).
       if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
         if (this.hasReadLock) {
           this.table.lock.readLock().unlock();
@@ -59,6 +60,7 @@ public class Table implements Iterable<Row> {
   public Table.TableHandler getReadHandler() {
     return new Table.TableHandler(this, true, false);
   }
+
   public Table.TableHandler getWriteHandler() {
     return new Table.TableHandler(this, false, true);
   }

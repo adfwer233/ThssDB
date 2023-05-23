@@ -4,7 +4,6 @@ import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.utils.Global;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -57,6 +56,7 @@ public class Database {
   public DatabaseHandler getReadHandler() {
     return new DatabaseHandler(this, true, false);
   }
+
   public DatabaseHandler getWriteHandler() {
     return new DatabaseHandler(this, false, true);
   }
@@ -181,15 +181,16 @@ public class Database {
     return tables.containsKey(tableName);
   }
 
-  public Table.TableHandler getTableForSession(Long sessionId, String tableName, Boolean read, Boolean write) {
+  public Table.TableHandler getTableForSession(
+      Long sessionId, String tableName, Boolean read, Boolean write) {
     if (transactionLockManagers.containsKey(sessionId)) {
       return transactionLockManagers.get(sessionId).getTableHandler(this, tableName, read, write);
-    }
-    else {
+    } else {
       // TODO: Exception
       return getTable(tableName, read, write);
     }
   }
+
   Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
 
     if (read) {

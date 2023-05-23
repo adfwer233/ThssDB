@@ -3,9 +3,7 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.utils.Global;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +42,7 @@ public class Manager {
   private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public void releaseTransactionLocks(Long sessionId) {
-    for (Database database :databases.values()) {
+    for (Database database : databases.values()) {
       if (database.transactionLockManagers.containsKey(sessionId)) {
         database.transactionLockManagers.get(sessionId).releaseLocks();
       }
@@ -136,7 +134,6 @@ public class Manager {
     } finally {
       lock.writeLock().unlock();
     }
-
   }
 
   public void switchDatabase(Long sessionId, String databaseName) {
