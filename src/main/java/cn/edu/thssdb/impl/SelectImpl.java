@@ -6,6 +6,7 @@ import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.schema.Database;
 import cn.edu.thssdb.schema.Row;
+import cn.edu.thssdb.schema.Table;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -19,9 +20,14 @@ public class SelectImpl {
     // build the target query table
 
     List<String> targetTableList = plan.getTableNameList();
-    QueryTable targetTable = new QueryTable(db.getTable(targetTableList.get(0)));
+    QueryTable targetTable;
+    try (Table.TableHandler tableHandler = db.getTable(targetTableList.get(0), true, false)) {
+       targetTable = new QueryTable(tableHandler.getTable());
+    }
     for (int i = 1; i < targetTableList.size(); i++) {
-      targetTable.joinWithTable(db.getTable(targetTableList.get(i)));
+      try (Table.TableHandler tableHandler = db.getTable(targetTableList.get(0), true, false)) {
+        targetTable.joinWithTable(tableHandler.getTable());
+      }
     }
 
     ArrayList<String> columnNames = new ArrayList<>();

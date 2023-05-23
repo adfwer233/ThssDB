@@ -180,20 +180,22 @@ public class IServiceHandler implements IService.Iface {
         try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          Table currentTable = currentDataBase.getTables().get(deletePlan.getTableName());
-          ArrayList<String> columnNames = new ArrayList<>();
-          ArrayList<Column> columns = currentTable.getColumns();
-          for (Column c : columns) {
-            columnNames.add(c.getName());
-          }
-          MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
-          if (whereCond == null) {
-            throw new DeleteWithoutWhereException();
-          } else {
-            for (Row row : currentTable) {
-              if (whereCond.ConditionVerify(row, columnNames)) {
-                currentDataBase.DeleteRow(row, currentTable.tableName);
-                return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
+          try (Table.TableHandler tableHandler = currentDataBase.getTable(deletePlan.getTableName(), false, true)) {
+            Table currentTable = tableHandler.getTable();
+            ArrayList<String> columnNames = new ArrayList<>();
+            ArrayList<Column> columns = currentTable.getColumns();
+            for (Column c : columns) {
+              columnNames.add(c.getName());
+            }
+            MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
+            if (whereCond == null) {
+              throw new DeleteWithoutWhereException();
+            } else {
+              for (Row row : currentTable) {
+                if (whereCond.ConditionVerify(row, columnNames)) {
+                  currentDataBase.DeleteRow(row, currentTable.tableName);
+                  return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
+                }
               }
             }
           }

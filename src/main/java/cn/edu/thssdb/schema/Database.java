@@ -175,15 +175,17 @@ public class Database {
     return this.getDatabaseDirPath() + File.separator + "tables";
   }
 
-  public HashMap<String, Table> getTables() {
-    return tables;
-  }
-
   public Boolean isTableExist(String tableName) {
     return tables.containsKey(tableName);
   }
 
-  public Table getTable(String tableName) {
-    return tables.get(tableName);
+  public Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
+
+    if (read) {
+      return tables.get(tableName).getReadHandler();
+    } else if (write) {
+      return tables.get(tableName).getWriteHandler();
+    }
+    return null;
   }
 }

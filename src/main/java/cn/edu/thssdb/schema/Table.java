@@ -39,8 +39,12 @@ public class Table implements Iterable<Row> {
       }
     }
 
+    public Table getTable() {
+      return table;
+    }
+
     @Override
-    public void close() throws Exception {
+    public void close() {
       // only in read committed isolation level, S lock is released when close
       // in serializable isolation level, S lock is released when the transaction terminates(commit or abort).
       if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
@@ -52,6 +56,12 @@ public class Table implements Iterable<Row> {
     }
   }
 
+  public Table.TableHandler getReadHandler() {
+    return new Table.TableHandler(this, true, false);
+  }
+  public Table.TableHandler getWriteHandler() {
+    return new Table.TableHandler(this, false, true);
+  }
 
   public Table(String databaseName, String tableName, Column[] columns) {
     // TODO: add primary index
