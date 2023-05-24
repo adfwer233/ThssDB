@@ -27,6 +27,7 @@ import cn.edu.thssdb.utils.StatusUtil;
 import org.apache.thrift.TException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,6 +91,24 @@ public class IServiceHandler implements IService.Iface {
 
     // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
+
+    ArrayList<LogicalPlan.LogicalPlanType> logType = new ArrayList<>(
+            Arrays.asList(
+                    LogicalPlan.LogicalPlanType.CREATE_TABLE,
+                    LogicalPlan.LogicalPlanType.DROP_TABLE,
+                    LogicalPlan.LogicalPlanType.INSERT,
+                    LogicalPlan.LogicalPlanType.DELETE
+            )
+    );
+
+    if (logType.contains(plan.getType())) {
+      // get write lock before write log
+      try (Database.DatabaseHandler db = manager.getCurrentDatabase(currentSessionId, false, true)) {
+        db.getDatabase().logger.writeLog(req.statement);
+      } catch (Exception e) {
+        return new ExecuteStatementResp(StatusUtil.fail("Write Log failed"), false);
+      }
+    }
 
     if (manager == null) System.out.println("manager is null");
 
