@@ -27,7 +27,7 @@ public class SelectImpl {
     }
     for (int i = 1; i < targetTableList.size(); i++) {
       try (Table.TableHandler tableHandler =
-          db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
+          db.getTableForSession(sessionId, targetTableList.get(i), true, false)) {
         targetTable.joinWithTable(tableHandler.getTable());
       }
     }
