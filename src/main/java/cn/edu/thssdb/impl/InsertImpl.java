@@ -21,6 +21,9 @@ public class InsertImpl {
     if (!currentDB.isTableExist(plan.getTableName())) {
       throw new TableNotExistException(plan.getTableName());
     }
+
+    System.out.println("Insert to " + currentDB.getName());
+
     try (Table.TableHandler tableHandler =
         currentDB.getTableForSession(sessionId, plan.getTableName(), false, true)) {
 
