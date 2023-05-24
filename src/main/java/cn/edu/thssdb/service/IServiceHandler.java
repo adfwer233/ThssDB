@@ -95,7 +95,7 @@ public class IServiceHandler implements IService.Iface {
     if (logType.contains(plan.getType())) {
       // get write lock before write log
       try (Database.DatabaseHandler db =
-          manager.getCurrentDatabase(currentSessionId, false, true)) {
+          manager.getCurrentDatabase(currentSessionId, true, false)) {
         db.getDatabase().logger.writeLog(req.statement);
       } catch (Exception e) {
         return new ExecuteStatementResp(StatusUtil.fail("Write Log failed"), false);

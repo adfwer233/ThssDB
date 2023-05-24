@@ -104,7 +104,7 @@ public class Manager {
         createDatabaseIfNotExists(line);
         Database database = databases.get(line);
         database.recover();
-
+        database.transactionLockManagers.put(tmpSessionId, new TransactionLockManager());
         currentDatabaseName.put(tmpSessionId, database.getName());
         // recover from log
         ArrayList<String> logs = database.logger.readLog();
@@ -119,6 +119,8 @@ public class Manager {
       bufferedReader.close();
       inputStreamReader.close();
       fileInputStream.close();
+
+      this.releaseTransactionLocks(tmpSessionId);
 
     } catch (Exception e) {
 
