@@ -12,7 +12,7 @@ public class TransactionLockManager {
   public Table.TableHandler getTableHandler(
       Database database, String tableName, Boolean read, Boolean write) {
     Table.TableHandler tableHandler = database.getTable(tableName, read, write);
-    if (read && Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
+    if (read && Global.isolationLevel == Global.IsolationLevel.SERIALIZABLE) {
       readLocks.add(tableHandler.getTable().lock);
     }
 
