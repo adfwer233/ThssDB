@@ -170,7 +170,13 @@ public class Database {
 
 
   public void quit() {
-    // TODO
+    try {
+      this.lock.readLock().lock();
+      this.persist();
+      this.logger.clearLog();
+    } finally {
+      this.lock.readLock().unlock();
+    }
   }
 
   public String getDatabaseDirPath() {

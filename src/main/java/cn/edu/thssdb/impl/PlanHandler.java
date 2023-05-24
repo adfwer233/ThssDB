@@ -170,6 +170,15 @@ public class PlanHandler {
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
+      case QUIT:
+        try (Database.DatabaseHandler currentDatabaseHandler =
+                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database database = currentDatabaseHandler.getDatabase();
+          database.quit();
+          return new ExecuteStatementResp(StatusUtil.success("quit success"), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
       default:
         System.out.println("Not Implemented");
     }
