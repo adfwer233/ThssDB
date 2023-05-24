@@ -6,6 +6,7 @@ import java.util.ArrayList;
 public class Logger {
   private String logPath;
   FileWriter fileWriter;
+
   public Logger(String path) {
     try {
       logPath = path;

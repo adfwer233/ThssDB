@@ -106,7 +106,7 @@ public class Manager {
         database.recover();
 
         currentDatabaseName.put(tmpSessionId, database.getName());
-        //recover from log
+        // recover from log
         ArrayList<String> logs = database.logger.readLog();
         for (String log : logs) {
           System.out.println("Recover: " + log);

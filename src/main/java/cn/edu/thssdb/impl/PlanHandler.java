@@ -16,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlanHandler {
-  public static ExecuteStatementResp handlePlan(LogicalPlan plan, Long currentSessionId, Manager manager) {
+  public static ExecuteStatementResp handlePlan(
+      LogicalPlan plan, Long currentSessionId, Manager manager) {
 
     switch (plan.getType()) {
       case CREATE_DB:
@@ -55,7 +56,7 @@ public class PlanHandler {
       case CREATE_TABLE:
         CreateTablePlan createTablePlan = (CreateTablePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
@@ -66,8 +67,8 @@ public class PlanHandler {
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
           currentDatabase.persist();
           return new ExecuteStatementResp(
-                  StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())),
-                  false);
+              StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())),
+              false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (NoCurrentDatabaseException e) {
@@ -80,7 +81,7 @@ public class PlanHandler {
       case SHOW_TABLE:
         ShowTablePlan showTablePlan = (ShowTablePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, true, false)) {
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           String res = currentDatabase.getTableInfo(showTablePlan.getTableName());
@@ -95,7 +96,7 @@ public class PlanHandler {
       case DROP_TABLE:
         DropTablePlan dropTablePlan = (DropTablePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           currentDataBase.drop(dropTablePlan.getTableName());
@@ -113,10 +114,10 @@ public class PlanHandler {
         InsertPlan insertPlan = (InsertPlan) plan;
         System.out.println("insert begin " + currentSessionId + manager.currentSessions);
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           System.out.println("get handler success");
           InsertImpl.handleInsertPlan(
-                  insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+              insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
           System.out.println("Insert failed" + e.getMessage());
@@ -126,12 +127,12 @@ public class PlanHandler {
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
           try (Table.TableHandler tableHandler =
-                       currentDataBase.getTableForSession(
-                               currentSessionId, deletePlan.getTableName(), false, true)) {
+              currentDataBase.getTableForSession(
+                  currentSessionId, deletePlan.getTableName(), false, true)) {
             Table currentTable = tableHandler.getTable();
             ArrayList<String> columnNames = new ArrayList<>();
             ArrayList<Column> columns = currentTable.getColumns();
@@ -146,7 +147,7 @@ public class PlanHandler {
                 if (whereCond.ConditionVerify(row, columnNames)) {
                   currentDataBase.DeleteRow(row, currentTable.tableName);
                   return new ExecuteStatementResp(
-                          StatusUtil.success(currentTable.tableName), false);
+                      StatusUtil.success(currentTable.tableName), false);
                 }
               }
             }
@@ -162,17 +163,17 @@ public class PlanHandler {
       case SELECT:
         SelectPlan selectPlan = (SelectPlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, true, false)) {
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           QueryTable queryTable =
-                  SelectImpl.handleSelectPlan(
-                          selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+              SelectImpl.handleSelectPlan(
+                  selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case QUIT:
         try (Database.DatabaseHandler currentDatabaseHandler =
-                     manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database database = currentDatabaseHandler.getDatabase();
           database.quit();
           return new ExecuteStatementResp(StatusUtil.success("quit success"), false);

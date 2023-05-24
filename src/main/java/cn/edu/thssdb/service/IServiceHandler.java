@@ -1,17 +1,9 @@
 package cn.edu.thssdb.service;
 
-import cn.edu.thssdb.exception.DeleteWithoutWhereException;
-import cn.edu.thssdb.exception.KeyNotExistException;
-import cn.edu.thssdb.exception.NoCurrentDatabaseException;
-import cn.edu.thssdb.exception.TableNotExistException;
-import cn.edu.thssdb.impl.InsertImpl;
 import cn.edu.thssdb.impl.PlanHandler;
-import cn.edu.thssdb.impl.SelectImpl;
 import cn.edu.thssdb.plan.LogicalGenerator;
 import cn.edu.thssdb.plan.LogicalPlan;
-import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
-import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.rpc.thrift.ConnectReq;
 import cn.edu.thssdb.rpc.thrift.ConnectResp;
 import cn.edu.thssdb.rpc.thrift.DisconnectReq;
@@ -30,7 +22,6 @@ import org.apache.thrift.TException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IServiceHandler implements IService.Iface {
@@ -93,18 +84,18 @@ public class IServiceHandler implements IService.Iface {
     // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
 
-    ArrayList<LogicalPlan.LogicalPlanType> logType = new ArrayList<>(
+    ArrayList<LogicalPlan.LogicalPlanType> logType =
+        new ArrayList<>(
             Arrays.asList(
-                    LogicalPlan.LogicalPlanType.CREATE_TABLE,
-                    LogicalPlan.LogicalPlanType.DROP_TABLE,
-                    LogicalPlan.LogicalPlanType.INSERT,
-                    LogicalPlan.LogicalPlanType.DELETE
-            )
-    );
+                LogicalPlan.LogicalPlanType.CREATE_TABLE,
+                LogicalPlan.LogicalPlanType.DROP_TABLE,
+                LogicalPlan.LogicalPlanType.INSERT,
+                LogicalPlan.LogicalPlanType.DELETE));
 
     if (logType.contains(plan.getType())) {
       // get write lock before write log
-      try (Database.DatabaseHandler db = manager.getCurrentDatabase(currentSessionId, false, true)) {
+      try (Database.DatabaseHandler db =
+          manager.getCurrentDatabase(currentSessionId, false, true)) {
         db.getDatabase().logger.writeLog(req.statement);
       } catch (Exception e) {
         return new ExecuteStatementResp(StatusUtil.fail("Write Log failed"), false);

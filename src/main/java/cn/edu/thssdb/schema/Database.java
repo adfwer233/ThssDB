@@ -18,6 +18,7 @@ public class Database {
 
   public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
   public Logger logger;
+
   public class DatabaseHandler implements AutoCloseable {
     private Database database;
     public Boolean hasReadLock;
@@ -166,8 +167,6 @@ public class Database {
       }
     }
   }
-
-
 
   public void quit() {
     try {
