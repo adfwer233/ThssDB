@@ -17,6 +17,7 @@ public class Database {
   ReentrantReadWriteLock lock;
 
   public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
+  public Logger logger;
 
   public class DatabaseHandler implements AutoCloseable {
     private Database database;
@@ -65,6 +66,8 @@ public class Database {
     this.name = name;
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
+
+    this.logger = new Logger(getDatabaseLogPath());
   }
 
   public String getTableInfo(String tableName) throws TableNotExistException {
@@ -166,7 +169,13 @@ public class Database {
   }
 
   public void quit() {
-    // TODO
+    try {
+      this.lock.readLock().lock();
+      this.persist();
+      this.logger.clearLog();
+    } finally {
+      this.lock.readLock().unlock();
+    }
   }
 
   public String getDatabaseDirPath() {
@@ -175,6 +184,10 @@ public class Database {
 
   public String getDatabaseTableFolderPath() {
     return this.getDatabaseDirPath() + File.separator + "tables";
+  }
+
+  public String getDatabaseLogPath() {
+    return getDatabaseDirPath() + File.separator + "log";
   }
 
   public Boolean isTableExist(String tableName) {

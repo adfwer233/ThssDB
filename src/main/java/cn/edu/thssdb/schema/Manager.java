@@ -2,6 +2,9 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.DatabaseExistException;
 import cn.edu.thssdb.exception.KeyNotExistException;
+import cn.edu.thssdb.impl.PlanHandler;
+import cn.edu.thssdb.plan.LogicalGenerator;
+import cn.edu.thssdb.plan.LogicalPlan;
 import cn.edu.thssdb.utils.Global;
 
 import java.io.*;
@@ -16,6 +19,8 @@ public class Manager {
   public ArrayList<Long> currentSessions = new ArrayList<>();
 
   public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
+    System.out.println("get current database " + sessionId);
+    System.out.flush();
     try {
       lock.readLock().lock();
       System.out.println(currentDatabaseName.get(sessionId));
@@ -92,12 +97,24 @@ public class Manager {
       InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
       BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
+      Long tmpSessionId = 2894759841l;
       String line;
       while ((line = bufferedReader.readLine()) != null) {
         System.out.println("recover database name: " + line);
         createDatabaseIfNotExists(line);
         Database database = databases.get(line);
         database.recover();
+
+        currentDatabaseName.put(tmpSessionId, database.getName());
+        // recover from log
+        ArrayList<String> logs = database.logger.readLog();
+        for (String log : logs) {
+          System.out.println("Recover: " + log);
+          System.out.println(currentDatabaseName);
+          LogicalPlan plan = LogicalGenerator.generate(log);
+          // only single transaction logger-based recovery supported
+          PlanHandler.handlePlan(plan, tmpSessionId, this);
+        }
       }
       bufferedReader.close();
       inputStreamReader.close();

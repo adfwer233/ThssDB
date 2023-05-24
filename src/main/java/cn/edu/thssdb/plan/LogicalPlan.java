@@ -24,6 +24,7 @@ public abstract class LogicalPlan {
     INSERT,
     SELECT,
     DELETE,
+    QUIT,
     COMPARER,
     CONDITION,
     MULTIPLE_CONDITION

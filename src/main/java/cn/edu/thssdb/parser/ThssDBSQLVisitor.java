@@ -243,5 +243,10 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     return new SelectPlan(attributeList, targetTableList, onConditionPlan, whereConditionPlan);
   }
 
+  @Override
+  public LogicalPlan visitQuitStmt(SQLParser.QuitStmtContext ctx) {
+    return new QuitPlan();
+  }
+
   // TODO: parser to more logical plan
 }
