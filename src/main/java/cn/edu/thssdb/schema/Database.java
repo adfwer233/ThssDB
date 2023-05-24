@@ -5,7 +5,6 @@ import cn.edu.thssdb.query.QueryResult;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.utils.Global;
 
-import javax.swing.text.StyledEditorKit;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +36,7 @@ public class Database {
         this.database.lock.writeLock().lock();
       }
     }
+
     public Database getDatabase() {
       return database;
     }
