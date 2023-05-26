@@ -138,6 +138,7 @@ public class Manager {
       if (databases.containsKey(databaseName)) throw new DatabaseExistException(databaseName);
       Database newDatabase = new Database(databaseName);
       databases.put(databaseName, newDatabase);
+      newDatabase.persist();
     } finally {
       lock.writeLock().unlock();
     }

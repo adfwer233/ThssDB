@@ -7,8 +7,13 @@ public class Logger {
   private String logPath;
   FileWriter fileWriter;
 
-  public Logger(String path) {
+  public Logger(String dirPath, String path) {
     try {
+      File logDir = new File(dirPath);
+      if (!logDir.exists()) {
+        logDir.mkdirs();
+      }
+
       logPath = path;
       File logFile = new File(path);
       if (!logFile.exists()) {

@@ -67,7 +67,7 @@ public class Database {
     this.tables = new HashMap<>();
     this.lock = new ReentrantReadWriteLock();
 
-    this.logger = new Logger(getDatabaseLogPath());
+    this.logger = new Logger(getDatabaseDirPath(), getDatabaseLogPath());
   }
 
   public String getTableInfo(String tableName) throws TableNotExistException {
@@ -82,6 +82,14 @@ public class Database {
   }
 
   public void persist() {
+
+    String databaseFolderPath = this.getDatabaseDirPath();
+    File databaseFolder = new File(databaseFolderPath);
+
+    System.out.println(databaseFolderPath);
+
+    if (!databaseFolder.exists())
+      databaseFolder.mkdirs();
 
     for (Table table : tables.values()) {
       String tableDirPath = table.getTableFolderPath();
