@@ -29,4 +29,6 @@ public class Global {
   }
 
   public static final IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
+
+  public static final Boolean ENABLE_ROLLBACK = true;
 }
