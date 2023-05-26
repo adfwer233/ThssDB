@@ -245,7 +245,7 @@ public class Table implements Iterable<Row> {
     String[] entryString = rowString.split(",");
     // TODO: Exception
     ArrayList<Entry> entries = new ArrayList<>();
-    for (int i =0 ;i < columns.size(); i++) {
+    for (int i = 0; i < columns.size(); i++) {
       switch (columns.get(i).getType()) {
         case STRING:
           entries.add(new Entry(entryString[i]));

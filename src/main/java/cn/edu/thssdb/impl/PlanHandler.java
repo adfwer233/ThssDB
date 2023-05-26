@@ -149,13 +149,13 @@ public class PlanHandler {
                   currentDataBase.DeleteRow(row, currentTable.tableName);
 
                   /*
-                  * Undo Format
-                  * DELETE <TABLE_NAME> <ROW CONTENT>
-                  * */
+                   * Undo Format
+                   * DELETE <TABLE_NAME> <ROW CONTENT>
+                   * */
                   if (Global.ENABLE_ROLLBACK) {
-                    currentDataBase.undoLogger.writeLog(String.format("DELETE %s %s", deletePlan.getTableName(), row.toString()));
+                    currentDataBase.undoLogger.writeLog(
+                        String.format("DELETE %s %s", deletePlan.getTableName(), row.toString()));
                   }
-
                 }
               }
             }

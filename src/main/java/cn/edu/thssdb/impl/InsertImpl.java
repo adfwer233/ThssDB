@@ -8,7 +8,6 @@ import cn.edu.thssdb.plan.impl.InsertPlan;
 import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.type.ColumnType;
 import cn.edu.thssdb.utils.Global;
-import sun.awt.GlobalCursorManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +90,8 @@ public class InsertImpl {
          * INSERT <TABLE NAME> <ROW data>
          * */
         if (Global.ENABLE_ROLLBACK) {
-          currentDB.undoLogger.writeLog(String.format("INSERT %s %s", plan.getTableName(), (new Row(entries)).toString()));
+          currentDB.undoLogger.writeLog(
+              String.format("INSERT %s %s", plan.getTableName(), (new Row(entries)).toString()));
         }
 
         table.insert(entries);

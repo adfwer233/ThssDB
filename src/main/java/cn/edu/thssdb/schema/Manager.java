@@ -177,7 +177,7 @@ public class Manager {
 
   public void rollbackCurrentTransaction(Long sessionId) {
     // TODO: add session id for undo logger
-    for (Database database: databases.values()) {
+    for (Database database : databases.values()) {
       database.rollback();
       database.undoLogger.clearLog();
       database.logger.clearLog();
