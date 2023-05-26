@@ -10,6 +10,7 @@ import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
 import cn.edu.thssdb.schema.*;
+import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.StatusUtil;
 
 import java.util.ArrayList;
@@ -146,8 +147,15 @@ public class PlanHandler {
               for (Row row : currentTable) {
                 if (whereCond.ConditionVerify(row, columnNames)) {
                   currentDataBase.DeleteRow(row, currentTable.tableName);
-                  return new ExecuteStatementResp(
-                      StatusUtil.success(currentTable.tableName), false);
+
+                  /*
+                   * Undo Format
+                   * DELETE <TABLE_NAME> <ROW CONTENT>
+                   * */
+                  if (Global.ENABLE_ROLLBACK) {
+                    currentDataBase.undoLogger.writeLog(
+                        String.format("DELETE %s %s", deletePlan.getTableName(), row.toString()));
+                  }
                 }
               }
             }

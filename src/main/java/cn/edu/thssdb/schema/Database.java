@@ -19,6 +19,8 @@ public class Database {
   public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
   public Logger logger;
 
+  public Logger undoLogger;
+
   public class DatabaseHandler implements AutoCloseable {
     private Database database;
     public Boolean hasReadLock;
@@ -68,6 +70,7 @@ public class Database {
     this.lock = new ReentrantReadWriteLock();
 
     this.logger = new Logger(getDatabaseDirPath(), getDatabaseLogPath());
+    this.undoLogger = new Logger(getDatabaseDirPath(), getDatabaseUndoPath());
   }
 
   public String getTableInfo(String tableName) throws TableNotExistException {
@@ -88,8 +91,7 @@ public class Database {
 
     System.out.println(databaseFolderPath);
 
-    if (!databaseFolder.exists())
-      databaseFolder.mkdirs();
+    if (!databaseFolder.exists()) databaseFolder.mkdirs();
 
     for (Table table : tables.values()) {
       String tableDirPath = table.getTableFolderPath();
@@ -176,6 +178,25 @@ public class Database {
     }
   }
 
+  public void rollback() {
+    ArrayList<String> undoLogs = undoLogger.readLog();
+    System.out.println(undoLogs);
+    for (int i = undoLogs.size() - 1; i >= 0; i--) {
+      String[] res = undoLogs.get(i).split(" ");
+      String tableName = res[1];
+      if (res[0].equals("INSERT")) {
+        // DELETE the row
+        Row row = tables.get(tableName).parseRow(res[2]);
+        System.out.println("Rollback " + res[2] + " " + row.toString());
+        tables.get(tableName).delete(row);
+      } else if (res[0].equals("DELETE")) {
+        // INSERT the row
+        Row row = tables.get(tableName).parseRow(res[2]);
+        tables.get(tableName).insert(row);
+      }
+    }
+  }
+
   public void quit() {
     try {
       this.lock.readLock().lock();
@@ -196,6 +217,10 @@ public class Database {
 
   public String getDatabaseLogPath() {
     return getDatabaseDirPath() + File.separator + "log";
+  }
+
+  public String getDatabaseUndoPath() {
+    return getDatabaseDirPath() + File.separator + "undo";
   }
 
   public Boolean isTableExist(String tableName) {

@@ -113,6 +113,10 @@ public class Table implements Iterable<Row> {
     System.out.println("insert success");
   }
 
+  public void insert(Row row) {
+    index.put(row.getEntries().get(primaryIndex), row);
+  }
+
   public String printTable() {
     String res = "";
     BPlusTreeIterator<Entry, Row> it = index.iterator();
@@ -234,5 +238,32 @@ public class Table implements Iterable<Row> {
 
   public String getTableMetaPath() {
     return getTablePath() + Global.META_SUFFIX;
+  }
+
+  public Row parseRow(String rowString) {
+    System.out.println("parse row " + rowString);
+    String[] entryString = rowString.split(",");
+    // TODO: Exception
+    ArrayList<Entry> entries = new ArrayList<>();
+    for (int i = 0; i < columns.size(); i++) {
+      switch (columns.get(i).getType()) {
+        case STRING:
+          entries.add(new Entry(entryString[i]));
+          break;
+        case INT:
+          entries.add(new Entry(Integer.parseInt(entryString[i])));
+          break;
+        case LONG:
+          entries.add(new Entry(Long.parseLong(entryString[i])));
+          break;
+        case DOUBLE:
+          entries.add(new Entry(Double.parseDouble(entryString[i])));
+          break;
+        case FLOAT:
+          entries.add(new Entry(Float.parseFloat(entryString[i])));
+          break;
+      }
+    }
+    return new Row(entries);
   }
 }

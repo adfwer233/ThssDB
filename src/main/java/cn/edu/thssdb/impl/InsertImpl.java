@@ -5,11 +5,9 @@ import cn.edu.thssdb.exception.InsertException.AttributeNameNotExistException;
 import cn.edu.thssdb.exception.InsertException.StringEntryTooLongException;
 import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.plan.impl.InsertPlan;
-import cn.edu.thssdb.schema.Column;
-import cn.edu.thssdb.schema.Database;
-import cn.edu.thssdb.schema.Entry;
-import cn.edu.thssdb.schema.Table;
+import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.type.ColumnType;
+import cn.edu.thssdb.utils.Global;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +61,6 @@ public class InsertImpl {
 
           Entry entry = new Entry(1);
 
-          System.out.println("asfsadfasdhgkjasd nsadkfhsjadgf " + type.toString());
-
           switch (type) {
             case INT:
               entry = new Entry(Integer.parseInt(entryString));
@@ -88,6 +84,16 @@ public class InsertImpl {
 
           entries.add(entry);
         }
+
+        /*
+         * Undo Log format
+         * INSERT <TABLE NAME> <ROW data>
+         * */
+        if (Global.ENABLE_ROLLBACK) {
+          currentDB.undoLogger.writeLog(
+              String.format("INSERT %s %s", plan.getTableName(), (new Row(entries)).toString()));
+        }
+
         table.insert(entries);
       }
       System.out.println(table.printTable());
