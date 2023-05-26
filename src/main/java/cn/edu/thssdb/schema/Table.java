@@ -241,6 +241,7 @@ public class Table implements Iterable<Row> {
   }
 
   public Row parseRow(String rowString) {
+    System.out.println("parse row " + rowString);
     String[] entryString = rowString.split(",");
     // TODO: Exception
     ArrayList<Entry> entries = new ArrayList<>();
@@ -248,14 +249,19 @@ public class Table implements Iterable<Row> {
       switch (columns.get(i).getType()) {
         case STRING:
           entries.add(new Entry(entryString[i]));
+          break;
         case INT:
           entries.add(new Entry(Integer.parseInt(entryString[i])));
+          break;
         case LONG:
           entries.add(new Entry(Long.parseLong(entryString[i])));
+          break;
         case DOUBLE:
           entries.add(new Entry(Double.parseDouble(entryString[i])));
+          break;
         case FLOAT:
           entries.add(new Entry(Float.parseFloat(entryString[i])));
+          break;
       }
     }
     return new Row(entries);

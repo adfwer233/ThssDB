@@ -69,7 +69,7 @@ public class IServiceHandler implements IService.Iface {
     }
 
     // commit
-    if (req.statement.equals("commit;")) {
+    if (req.statement.toLowerCase().equals("commit;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session not in a Transaction now"), false);
@@ -78,6 +78,16 @@ public class IServiceHandler implements IService.Iface {
         manager.currentSessions.remove(currentSessionId);
         manager.releaseTransactionLocks(currentSessionId);
         return new ExecuteStatementResp(StatusUtil.success("Transaction end"), false);
+      }
+    }
+
+    if (req.statement.toLowerCase().equals("rollback;")) {
+      if (!manager.currentSessions.contains(currentSessionId)) {
+        return new ExecuteStatementResp(
+                StatusUtil.fail("This session not in a Transaction now"), false);
+      } else {
+        manager.rollbackCurrentTransaction(currentSessionId);
+        return new ExecuteStatementResp(StatusUtil.success("Rollback success"), false);
       }
     }
 

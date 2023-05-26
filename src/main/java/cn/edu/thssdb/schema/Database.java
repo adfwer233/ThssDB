@@ -181,14 +181,16 @@ public class Database {
 
   public void rollback() {
     ArrayList<String> undoLogs = undoLogger.readLog();
+    System.out.println(undoLogs);
     for (int i = undoLogs.size() - 1; i >= 0; i--) {
       String[] res = undoLogs.get(i).split(" ");
       String tableName = res[1];
-      if (res[0] == "INSERT") {
+      if (res[0].equals("INSERT")) {
         // DELETE the row
         Row row = tables.get(tableName).parseRow(res[2]);
+        System.out.println("Rollback " + res[2] + " " + row.toString());
         tables.get(tableName).delete(row);
-      } else if (res[0] == "DELETE") {
+      } else if (res[0].equals("DELETE")) {
         // INSERT the row
         Row row = tables.get(tableName).parseRow(res[2]);
         tables.get(tableName).insert(row);
