@@ -19,7 +19,6 @@ public class QueryTable implements Iterator<Row> {
     this.rows = new ArrayList<>();
     for (Row row : table) {
       rows.add(row);
-      System.out.println(row);
     }
     this.columns = new ArrayList<>();
     for (Column col : table.getColumns()) {
@@ -55,20 +54,12 @@ public class QueryTable implements Iterator<Row> {
     List<Row> newRows = new ArrayList<>();
 
     for (Row rowLeft : this.rows) {
-      System.out.println(rowLeft);
-    }
-
-    for (Row rowLeft : this.rows) {
       for (Row rowRight : rightTable) {
         Row tmp = new Row(rowLeft);
         tmp.appendEntries(rowRight.getEntries());
         newRows.add(tmp);
-        System.out.println(rowLeft.toString() + "----" + rowRight.toString());
-        //        System.out.println(String.format("%d %d, %d, %d", newRows.size(),
-        // rowLeft.getEntries().size(), rowRight.getEntries().size(), tmp.getEntries().size()));
       }
     }
-    System.out.println(newRows);
     this.rows = newRows;
     this.columns = newColumns;
   }

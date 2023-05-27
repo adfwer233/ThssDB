@@ -23,7 +23,6 @@ public class TransactionLockManager {
   }
 
   public void releaseLocks() {
-    System.out.println("Release Lock begin");
     if (Global.isolationLevel == Global.IsolationLevel.SERIALIZABLE) {
       for (ReentrantReadWriteLock lock : readLocks) {
         lock.readLock().unlock();
@@ -31,7 +30,6 @@ public class TransactionLockManager {
     }
 
     for (ReentrantReadWriteLock lock : writeLocks) {
-      System.out.println("Release Write Lock");
       lock.writeLock().unlock();
     }
 

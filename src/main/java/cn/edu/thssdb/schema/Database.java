@@ -89,8 +89,6 @@ public class Database {
     String databaseFolderPath = this.getDatabaseDirPath();
     File databaseFolder = new File(databaseFolderPath);
 
-    System.out.println(databaseFolderPath);
-
     if (!databaseFolder.exists()) databaseFolder.mkdirs();
 
     for (Table table : tables.values()) {

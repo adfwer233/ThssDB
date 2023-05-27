@@ -80,7 +80,7 @@ public class IServiceHandler implements IService.Iface {
         // TODO: handle lock here
         manager.currentSessions.remove(currentSessionId);
         manager.releaseTransactionLocks(currentSessionId);
-        manager.persist();
+        manager.persistCurrentDatabase(currentSessionId);
         return new ExecuteStatementResp(StatusUtil.success("Transaction end"), false);
       }
     }
@@ -120,11 +120,11 @@ public class IServiceHandler implements IService.Iface {
 
     ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
 
-    //    // auto commit
-    //    if (!manager.currentSessions.contains(currentSessionId)) {
-    //      manager.releaseTransactionLocks(currentSessionId);
-    //      manager.persist();
-    //    }
+    // auto commit
+    if (!manager.currentSessions.contains(currentSessionId)) {
+      manager.persistCurrentDatabase(currentSessionId);
+      manager.releaseTransactionLocks(currentSessionId);
+    }
 
     return resp;
   }

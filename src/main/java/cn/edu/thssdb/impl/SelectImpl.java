@@ -46,8 +46,6 @@ public class SelectImpl {
       List<Row> rowToDelete = new ArrayList<>();
       while (rowIterator.hasNext()) {
         Row row = rowIterator.next();
-        System.out.println(row.getEntries().size());
-        System.out.println(columnNames.size());
         if (!onConditionPlan.ConditionVerify(row, columnNames)) {
           rowToDelete.add(row);
         }
@@ -68,13 +66,11 @@ public class SelectImpl {
           rowToDelete.add(row);
         }
       }
-      System.out.println(rowToDelete);
       targetTable.rows.removeAll(rowToDelete);
     }
 
     // select the columns of result table
     List<String> attributeList = plan.getAttributeList();
-    System.out.println(attributeList);
     ArrayList<Column> selectedColumns = new ArrayList<>();
     ArrayList<Row> selectedRows = new ArrayList<>();
     if (attributeList.contains("*")) {
@@ -93,7 +89,6 @@ public class SelectImpl {
         }
       }
 
-      System.out.println(selectedColumnsIndex);
       targetTable.columns = selectedColumns;
 
       // select the columns in rows
@@ -102,7 +97,6 @@ public class SelectImpl {
       }
     }
 
-    System.out.println(targetTable.toString());
     targetTable.rows = selectedRows;
 
     return targetTable;

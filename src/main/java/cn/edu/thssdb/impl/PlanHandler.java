@@ -15,6 +15,7 @@ import cn.edu.thssdb.utils.StatusUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PlanHandler {
   public static ExecuteStatementResp handlePlan(
@@ -26,10 +27,9 @@ public class PlanHandler {
         try {
           manager.createDatabaseIfNotExists(createPlan.getDatabaseName());
           manager.persist();
-          System.out.println("create success");
           return new ExecuteStatementResp(StatusUtil.success("Create Success"), false);
         } catch (Exception e) {
-          System.out.print(e);
+          e.printStackTrace();
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case DROP_DB:
@@ -60,7 +60,6 @@ public class PlanHandler {
           Database currentDatabase = currentDatabaseHandler.getDatabase();
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
-          System.out.println(columnList.size());
 
           Column[] columnsArray = columnList.stream().toArray(Column[]::new);
           String tmpString = createTablePlan.getTableName();
@@ -107,20 +106,16 @@ public class PlanHandler {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case SHOW_DB:
-        System.out.println("Show databases success");
         String res = Manager.getInstance().showDb();
         return new ExecuteStatementResp(StatusUtil.success(res), false);
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
-        System.out.println("insert begin " + currentSessionId + manager.currentSessions);
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, false, true)) {
-          System.out.println("get handler success");
           InsertImpl.handleInsertPlan(
               insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
         } catch (Exception e) {
-          System.out.println("Insert failed" + e.getMessage());
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case DELETE:
@@ -177,6 +172,8 @@ public class PlanHandler {
           ExecuteStatementResp resp =
               new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
           resp.setRowList(queryTable.getRowList());
+          resp.setColumnsList(
+              queryTable.columns.stream().map(x -> x.getName()).collect(Collectors.toList()));
           return resp;
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

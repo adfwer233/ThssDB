@@ -34,11 +34,6 @@ public class SingleConditionPlan extends LogicalPlan {
   public Boolean ConditionVerify(Row row, ArrayList<String> columnName) {
     try {
       int result = 0;
-      System.out.println("compare here");
-      System.out.println(columnName);
-      System.out.println(row);
-      System.out.println(expr1.tableName);
-      System.out.println(expr1.columnName);
       expr1.ComparerRes(row, columnName);
       Object value1 = expr1.getValue(row, columnName);
 

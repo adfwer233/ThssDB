@@ -20,8 +20,6 @@ public class InsertImpl {
       throw new TableNotExistException(plan.getTableName());
     }
 
-    System.out.println("Insert to " + currentDB.getName());
-
     try (Table.TableHandler tableHandler =
         currentDB.getTableForSession(sessionId, plan.getTableName(), false, true)) {
 
@@ -35,10 +33,6 @@ public class InsertImpl {
       for (List<String> entryStringList : entryList) {
 
         if (attrNameList.size() != entryStringList.size() && attrNameList.size() != 0) {
-          System.out.println(attrNameList.size());
-          System.out.println(entryList.size());
-          System.out.println(attrNameList);
-          System.out.println(entryStringList);
           throw new AttributeValueNotMatchException();
         }
 
@@ -106,7 +100,7 @@ public class InsertImpl {
 
         table.insert(entries);
       }
-      System.out.println(table.printTable());
+      //      System.out.println(table.printTable());
     } catch (Exception e) {
       e.printStackTrace();
     }
