@@ -120,8 +120,7 @@ public class IServiceHandler implements IService.Iface {
 
     ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
 
-    // auto commit
-    if (!manager.currentSessions.contains(currentSessionId)) {
+    if (logType.contains(plan.getType()) && !manager.currentSessions.contains(currentSessionId)) {
       manager.persistCurrentDatabase(currentSessionId);
       manager.releaseTransactionLocks(currentSessionId);
     }

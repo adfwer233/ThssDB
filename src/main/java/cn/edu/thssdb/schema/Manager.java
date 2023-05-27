@@ -19,11 +19,10 @@ public class Manager {
   public ArrayList<Long> currentSessions = new ArrayList<>();
 
   public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
-    System.out.println("get current database " + sessionId);
-    System.out.flush();
+
     try {
       lock.readLock().lock();
-      System.out.println(currentDatabaseName.get(sessionId));
+//      System.out.println(currentDatabaseName.get(sessionId));
       return getDatabaseHandler(currentDatabaseName.get(sessionId), read, write);
     } finally {
       lock.readLock().unlock();

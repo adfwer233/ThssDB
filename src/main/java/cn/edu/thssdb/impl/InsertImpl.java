@@ -79,7 +79,11 @@ public class InsertImpl {
               entry = new Entry(Double.parseDouble(entryString));
               break;
             case STRING:
-              if (entryString.length() > maxLength) throw new StringEntryTooLongException();
+              entryString = entryString.substring(1, entryString.length()-1);
+              if (entryString.length() > maxLength) {
+                System.out.println(String.format("Too long %d %d %s", entryString.length(), maxLength, entryString));
+                throw new StringEntryTooLongException();
+              }
               entry = new Entry(entryString);
               break;
             default:
@@ -98,7 +102,8 @@ public class InsertImpl {
               String.format("INSERT %s %s", plan.getTableName(), (new Row(entries)).toString()));
         }
 
-        table.insert(entries);
+        ArrayList<String> tmp = new ArrayList<>(attrNameList);
+        table.insert(entries, tmp);
       }
       //      System.out.println(table.printTable());
     } catch (Exception e) {

@@ -107,10 +107,17 @@ public class Table implements Iterable<Row> {
     serialize();
   }
 
-  public void insert(ArrayList<Entry> entriesToInsert) {
-    System.out.println("insert start");
-    index.put(entriesToInsert.get(primaryIndex), new Row(entriesToInsert));
-    System.out.println("insert success");
+  public void insert(ArrayList<Entry> entriesToInsert, ArrayList<String> attrList) {
+    ArrayList<Entry> entries = new ArrayList<>();
+    for (int i = 0; i < columns.size(); i++) {
+      Integer index = attrList.indexOf(columns.get(i).getName());
+      if (index >= 0) {
+        entries.add(entriesToInsert.get(index));
+      } else {
+        entries.add(null);
+      }
+    }
+    index.put(entries.get(primaryIndex), new Row(entries));
   }
 
   public void insert(Row row) {

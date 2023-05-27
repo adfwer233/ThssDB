@@ -83,8 +83,14 @@ public class QueryTable implements Iterator<Row> {
   public List<List<String>> getRowList() {
     List<List<String>> res = new ArrayList<>();
     for (Row row : rows) {
-      List<String> rowStringList =
-          row.getEntries().stream().map(x -> x.toString()).collect(Collectors.toList());
+      ArrayList<String> rowStringList = new ArrayList<>();
+      for (Entry entry : row.getEntries()) {
+        if (entry != null) {
+          rowStringList.add(entry.toString());
+        } else {
+          rowStringList.add("null");
+        }
+      }
       res.add(rowStringList);
     }
     return res;
