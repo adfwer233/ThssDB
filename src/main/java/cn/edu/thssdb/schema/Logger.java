@@ -28,7 +28,7 @@ public class Logger {
 
   public void writeLog(String statement) {
     try {
-      System.out.println("Write log to" + logPath + " " + statement);
+      //      System.out.println("Write log to" + logPath + " " + statement);
       fileWriter.write(statement + '\n');
       fileWriter.flush();
     } catch (IOException ioException) {

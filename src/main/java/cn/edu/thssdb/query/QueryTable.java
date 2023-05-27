@@ -8,13 +8,14 @@ import cn.edu.thssdb.schema.Table;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class QueryTable implements Iterator<Row> {
 
   public List<Row> rows;
   public List<Column> columns;
 
-  public QueryTable(Table table) {
+  public QueryTable(Table table, Boolean fullTableName) {
     this.rows = new ArrayList<>();
     for (Row row : table) {
       rows.add(row);
@@ -22,7 +23,7 @@ public class QueryTable implements Iterator<Row> {
     this.columns = new ArrayList<>();
     for (Column col : table.getColumns()) {
       Column tmp = new Column(col.getName());
-      tmp.setName(table.tableName + "." + col.getName());
+      if (fullTableName) tmp.setName(table.tableName + "." + col.getName());
       columns.add(tmp);
     }
   }
@@ -59,7 +60,6 @@ public class QueryTable implements Iterator<Row> {
         newRows.add(tmp);
       }
     }
-    System.out.println(newRows);
     this.rows = newRows;
     this.columns = newColumns;
   }
@@ -78,5 +78,15 @@ public class QueryTable implements Iterator<Row> {
       buffer.append('\n');
     }
     return buffer.toString();
+  }
+
+  public List<List<String>> getRowList() {
+    List<List<String>> res = new ArrayList<>();
+    for (Row row : rows) {
+      List<String> rowStringList =
+          row.getEntries().stream().map(x -> x.toString()).collect(Collectors.toList());
+      res.add(rowStringList);
+    }
+    return res;
   }
 }

@@ -59,8 +59,6 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
     // parse column definitions and generate column list
     List<SQLParser.ColumnDefContext> columnDefs = ctx.columnDef();
     ArrayList<Column> columns = new ArrayList<Column>();
-    System.out.println(columnDefs.size());
-    System.out.println(columnDefs.get(0).getText());
 
     List<String> primaryKeys = new ArrayList<String>();
 

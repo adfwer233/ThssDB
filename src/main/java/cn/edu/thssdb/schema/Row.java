@@ -14,12 +14,12 @@ public class Row implements Serializable {
   }
 
   // only save the given indices
-  public void selectEntry(ArrayList<Integer> index) {
+  public Row selectEntry(ArrayList<Integer> index) {
     ArrayList<Entry> newEntries = new ArrayList<>();
     for (Integer i : index) {
       newEntries.add(entries.get(i));
     }
-    this.entries = newEntries;
+    return new Row(newEntries);
   }
 
   public Row() {

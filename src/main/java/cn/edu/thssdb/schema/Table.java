@@ -151,7 +151,6 @@ public class Table implements Iterable<Row> {
       ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
 
       for (Row row : this) {
-        System.out.println("writing row " + getTablePath());
         objectOutputStream.writeObject(row);
       }
 
