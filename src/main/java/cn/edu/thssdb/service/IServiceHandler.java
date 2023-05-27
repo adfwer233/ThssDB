@@ -52,6 +52,9 @@ public class IServiceHandler implements IService.Iface {
       return new ExecuteStatementResp(
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
+
+    System.out.println("[Statement] " + req.statement);
+
     // TODO: maintain a map from session id to current database
     long currentSessionId = req.getSessionId();
 
@@ -77,6 +80,7 @@ public class IServiceHandler implements IService.Iface {
         // TODO: handle lock here
         manager.currentSessions.remove(currentSessionId);
         manager.releaseTransactionLocks(currentSessionId);
+        manager.persist();
         return new ExecuteStatementResp(StatusUtil.success("Transaction end"), false);
       }
     }
@@ -114,6 +118,14 @@ public class IServiceHandler implements IService.Iface {
 
     if (manager == null) System.out.println("manager is null");
 
-    return PlanHandler.handlePlan(plan, currentSessionId, manager);
+    ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
+
+    //    // auto commit
+    //    if (!manager.currentSessions.contains(currentSessionId)) {
+    //      manager.releaseTransactionLocks(currentSessionId);
+    //      manager.persist();
+    //    }
+
+    return resp;
   }
 }

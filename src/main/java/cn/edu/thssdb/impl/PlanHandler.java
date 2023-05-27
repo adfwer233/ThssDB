@@ -19,7 +19,6 @@ import java.util.List;
 public class PlanHandler {
   public static ExecuteStatementResp handlePlan(
       LogicalPlan plan, Long currentSessionId, Manager manager) {
-
     switch (plan.getType()) {
       case CREATE_DB:
         System.out.println("[DEBUG] " + plan);
@@ -175,7 +174,10 @@ public class PlanHandler {
           QueryTable queryTable =
               SelectImpl.handleSelectPlan(
                   selectPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
-          return new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
+          ExecuteStatementResp resp =
+              new ExecuteStatementResp(StatusUtil.success(queryTable.toString()), false);
+          resp.setRowList(queryTable.getRowList());
+          return resp;
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }

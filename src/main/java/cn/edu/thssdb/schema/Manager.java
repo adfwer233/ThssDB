@@ -81,6 +81,9 @@ public class Manager {
       for (Database database : this.databases.values()) {
         outputStreamWriter.write(database.getName() + "\n");
         System.out.println("persist " + database.getName());
+        database.persist();
+        database.logger.clearLog();
+        database.undoLogger.clearLog();
       }
       outputStreamWriter.close();
       fileOutputStream.close();

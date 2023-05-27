@@ -34,9 +34,11 @@ public class InsertImpl {
 
       for (List<String> entryStringList : entryList) {
 
-        if (attrNameList.size() != entryStringList.size()) {
+        if (attrNameList.size() != entryStringList.size() && attrNameList.size() != 0) {
           System.out.println(attrNameList.size());
           System.out.println(entryList.size());
+          System.out.println(attrNameList);
+          System.out.println(entryStringList);
           throw new AttributeValueNotMatchException();
         }
 
@@ -44,21 +46,29 @@ public class InsertImpl {
         for (int i = 0; i < entryStringList.size(); i++) {
           String entryString = entryStringList.get(i);
           ColumnType type = ColumnType.INT;
+
           int maxLength = 0;
-          boolean matched = false;
-          for (Column column : table.getColumns()) {
-            if (column.getName().equals(attrNameList.get(i))) {
-              type = column.getType();
-              maxLength = column.getMaxLength();
-              matched = true;
-              break;
+          if (attrNameList.size() != 0) {
+
+            boolean matched = false;
+            for (Column column : table.getColumns()) {
+              if (column.getName().equals(attrNameList.get(i))) {
+                type = column.getType();
+                maxLength = column.getMaxLength();
+                matched = true;
+                break;
+              }
+            }
+
+            if (!matched) {
+              throw new AttributeNameNotExistException(attrNameList.get(i));
+            }
+          } else {
+            type = table.getColumns().get(i).getType();
+            if (type == ColumnType.STRING) {
+              maxLength = table.getColumns().get(i).getMaxLength();
             }
           }
-
-          if (!matched) {
-            throw new AttributeNameNotExistException(attrNameList.get(i));
-          }
-
           Entry entry = new Entry(1);
 
           switch (type) {
@@ -98,7 +108,7 @@ public class InsertImpl {
       }
       System.out.println(table.printTable());
     } catch (Exception e) {
-
+      e.printStackTrace();
     }
   }
 }

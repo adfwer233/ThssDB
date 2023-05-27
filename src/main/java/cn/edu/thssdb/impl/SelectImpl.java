@@ -21,9 +21,10 @@ public class SelectImpl {
 
     List<String> targetTableList = plan.getTableNameList();
     QueryTable targetTable;
+
     try (Table.TableHandler tableHandler =
         db.getTableForSession(sessionId, targetTableList.get(0), true, false)) {
-      targetTable = new QueryTable(tableHandler.getTable());
+      targetTable = new QueryTable(tableHandler.getTable(), targetTableList.size() > 1);
     }
     for (int i = 1; i < targetTableList.size(); i++) {
       try (Table.TableHandler tableHandler =
@@ -37,8 +38,6 @@ public class SelectImpl {
       columnNames.add(column.getName());
     }
 
-    System.out.println(targetTable.toString());
-
     // on condition in table query
     MultipleConditionPlan onConditionPlan = plan.getOnConditionPlan();
     if (onConditionPlan != null) {
@@ -47,6 +46,8 @@ public class SelectImpl {
       List<Row> rowToDelete = new ArrayList<>();
       while (rowIterator.hasNext()) {
         Row row = rowIterator.next();
+        System.out.println(row.getEntries().size());
+        System.out.println(columnNames.size());
         if (!onConditionPlan.ConditionVerify(row, columnNames)) {
           rowToDelete.add(row);
         }
@@ -97,11 +98,12 @@ public class SelectImpl {
 
       // select the columns in rows
       for (Row row : targetTable.rows) {
-        row.selectEntry(selectedColumnsIndex);
+        selectedRows.add(row.selectEntry(selectedColumnsIndex));
       }
     }
 
-    //    targetTable.rows = selectedRows;
+    System.out.println(targetTable.toString());
+    targetTable.rows = selectedRows;
 
     return targetTable;
   }
