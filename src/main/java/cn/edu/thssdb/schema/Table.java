@@ -18,6 +18,8 @@ public class Table implements Iterable<Row> {
   public BPlusTree<Entry, Row> index;
   private int primaryIndex = 0;
 
+  private Boolean updateFlag = false;
+
   // table handler to manage the lock of table
   public class TableHandler implements AutoCloseable {
 
@@ -104,7 +106,10 @@ public class Table implements Iterable<Row> {
   }
 
   public void persist() {
-    serialize();
+    if (updateFlag) {
+      serialize();
+    }
+    updateFlag = false;
   }
 
   public void insert(ArrayList<Entry> entriesToInsert, ArrayList<String> attrList) {
@@ -118,6 +123,7 @@ public class Table implements Iterable<Row> {
       }
     }
     index.put(entries.get(primaryIndex), new Row(entries));
+    updateFlag = true;
   }
 
   public void insert(Row row) {
@@ -139,6 +145,7 @@ public class Table implements Iterable<Row> {
       throw new KeyNotExistException();
     }
     this.index.remove(row.getEntries().get(this.primaryIndex));
+    updateFlag = true;
   }
 
   public void update() {
@@ -153,16 +160,19 @@ public class Table implements Iterable<Row> {
       File tableFile = new File(getTablePath());
       if (!tableFile.exists()) tableFile.createNewFile();
 
+      System.out.println("[IO] " + tableFile);
       // TODO: paging and multi-thread writing
       FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
-      ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
 
       for (Row row : this) {
         objectOutputStream.writeObject(row);
       }
 
       objectOutputStream.close();
-      fileOutputStream.close();
+      bufferedOutputStream.flush();
+      bufferedOutputStream.close();
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }

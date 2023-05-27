@@ -106,8 +106,10 @@ public class IServiceHandler implements IService.Iface {
                 LogicalPlan.LogicalPlanType.INSERT,
                 LogicalPlan.LogicalPlanType.DELETE));
 
-    if (logType.contains(plan.getType())) {
-      // get write lock before write log
+    /*/
+     only log in transaction environment, autocommit needs no log
+     */
+    if (logType.contains(plan.getType()) && manager.currentSessions.contains(currentSessionId)) {
       try (Database.DatabaseHandler db =
           manager.getCurrentDatabase(currentSessionId, true, false)) {
         db.getDatabase().logger.writeLog(req.statement);
