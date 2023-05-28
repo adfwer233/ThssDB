@@ -1,14 +1,21 @@
 package cn.edu.thssdb.index;
 
+import cn.edu.thssdb.schema.Record;
+import cn.edu.thssdb.schema.Table;
+import cn.edu.thssdb.storage.BufferManager;
 import cn.edu.thssdb.utils.Pair;
 
-public final class BPlusTree<K extends Comparable<K>, V> implements Iterable<Pair<K, V>> {
+public final class BPlusTree<K extends Comparable<K>, V extends Record> implements Iterable<Pair<K, V>> {
 
   BPlusTreeNode<K, V> root;
   private int size;
+  public PageCounter pageCounter;
 
-  public BPlusTree() {
-    root = new BPlusTreeLeafNode<>(0);
+  public BufferManager bufferManager;
+  public BPlusTree(Table table) {
+    pageCounter = new PageCounter();
+    bufferManager = new BufferManager(table);
+    root = new BPlusTreeLeafNode<>(0, pageCounter, bufferManager);
   }
 
   public int size() {

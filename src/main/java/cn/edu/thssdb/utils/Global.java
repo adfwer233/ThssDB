@@ -23,6 +23,7 @@ public class Global {
 
   public static final String META_SUFFIX = "_meta";
 
+  public static final String INDEX_SUFFIX = "_index";
   public enum IsolationLevel {
     READ_COMMITTED,
     SERIALIZABLE

@@ -166,6 +166,10 @@ public class BufferManager {
     }
   }
 
+  public void writeAllDirty() {
+
+  }
+
   private String getPagePath(Integer page) {
     return tableDir + File.separator + tableName + page.toString();
   }

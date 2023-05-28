@@ -3,6 +3,8 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.index.BPlusTreeIterator;
+import cn.edu.thssdb.index.PageCounter;
+import cn.edu.thssdb.index.RecordTreeIterator;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
@@ -15,7 +17,7 @@ public class Table implements Iterable<Row> {
   private String databaseName;
   public String tableName;
   public ArrayList<Column> columns;
-  public BPlusTree<Entry, Row> index;
+  private BPlusTree<Entry, Record> index;
   private int primaryIndex = 0;
 
   private Boolean updateFlag = false;
@@ -68,7 +70,6 @@ public class Table implements Iterable<Row> {
   }
 
   public Table(String databaseName, String tableName, Column[] columns) {
-    // TODO: add primary index
     for (int i = 0; i < columns.length; i++) {
       if (columns[i].isPrimary()) {
         primaryIndex = i;
@@ -79,10 +80,11 @@ public class Table implements Iterable<Row> {
       columns[0].setPrimary();
     }
 
-    index = new BPlusTree<>();
     this.databaseName = databaseName;
     this.tableName = tableName;
     this.columns = new ArrayList(Arrays.asList(columns));
+
+    index = new BPlusTree<>(this);
   }
 
   public ArrayList<Column> getColumns() {
@@ -99,17 +101,70 @@ public class Table implements Iterable<Row> {
 
   public void recover() {
     System.out.println("table recover " + getTablePath());
-    ArrayList<Row> rows = deserialize();
-    for (Row row : rows) {
-      index.put(row.getEntries().get(primaryIndex), row);
+
+    try {
+      File tableFolder = new File(getTableFolderPath());
+      if (!tableFolder.exists()) tableFolder.mkdirs();
+
+      File tableFile = new File(getTablePath());
+      if (!tableFile.exists()) return ;
+
+      FileInputStream fileInputStream = new FileInputStream(tableFile);
+      ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+      PageCounter res;
+      System.out.println("read ready " + getTablePath());
+      Object inputObject;
+
+      inputObject = objectInputStream.readObject();
+      res = (PageCounter) inputObject;
+
+      objectInputStream.close();
+      fileInputStream.close();
+
+      // recover the b+tree in memory
+      for (Integer index: res.indexList) {
+        ArrayList<Row> page = this.index.bufferManager.readPage(index);
+        for (Row row: page) {
+          Entry primary = row.getEntries().get(this.primaryIndex);
+          this.index.put(primary, new Record());
+        }
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
     }
+
   }
 
   public void persist() {
     if (updateFlag) {
-      serialize();
+      index.bufferManager.writeAllDirty();
     }
     updateFlag = false;
+
+    // persist the index (page indices)
+    try {
+      File tableFolder = new File(getTableFolderPath());
+      if (!tableFolder.exists()) tableFolder.mkdirs();
+
+      File tableFile = new File(getTableIndexPath());
+      if (!tableFile.exists()) tableFile.createNewFile();
+
+      System.out.println("[IO INDEX] " + tableFile);
+
+      FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
+      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+      ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+
+      objectOutputStream.writeObject(index.pageCounter);
+
+      objectOutputStream.close();
+      bufferedOutputStream.flush();
+      bufferedOutputStream.close();
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   public void insert(ArrayList<Entry> entriesToInsert, ArrayList<String> attrList) {
@@ -122,20 +177,20 @@ public class Table implements Iterable<Row> {
         entries.add(null);
       }
     }
-    index.put(entries.get(primaryIndex), new Row(entries));
+
+    Record record = new Record(new Row(entries));
+    index.put(entries.get(primaryIndex), record);
     updateFlag = true;
   }
 
   public void insert(Row row) {
-    index.put(row.getEntries().get(primaryIndex), row);
+    index.put(row.getEntries().get(primaryIndex), new Record(row));
   }
 
   public String printTable() {
     String res = "";
-    BPlusTreeIterator<Entry, Row> it = index.iterator();
-    while (it.hasNext()) {
-      Pair<Entry, Row> pair = it.next();
-      res = res.concat(pair.right.toString() + ' ');
+    for (Row row : this) {
+      res = res.concat(row.toString() + ' ');
     }
     return res;
   }
@@ -215,7 +270,7 @@ public class Table implements Iterable<Row> {
     private Iterator<Pair<Entry, Row>> iterator;
 
     TableIterator(Table table) {
-      this.iterator = table.index.iterator();
+      this.iterator = new RecordTreeIterator(index, table);
     }
 
     @Override
@@ -254,6 +309,10 @@ public class Table implements Iterable<Row> {
 
   public String getTableMetaPath() {
     return getTablePath() + Global.META_SUFFIX;
+  }
+
+  public String getTableIndexPath() {
+    return getTablePath() + Global.INDEX_SUFFIX;
   }
 
   public Row parseRow(String rowString) {
