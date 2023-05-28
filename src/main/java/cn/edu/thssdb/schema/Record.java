@@ -14,6 +14,7 @@ public class Record {
   public void removeContent() {
     content = null;
   }
+
   public Boolean hasContent() {
     return content != null;
   }

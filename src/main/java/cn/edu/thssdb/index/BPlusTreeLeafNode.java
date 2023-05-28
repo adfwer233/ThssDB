@@ -10,13 +10,15 @@ import cn.edu.thssdb.utils.Global;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record> extends BPlusTreeNode<K, V> {
+public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
+    extends BPlusTreeNode<K, V> {
 
   ArrayList<V> values;
   private BPlusTreeLeafNode<K, V> next;
   private PageCounter pageCounter;
   private final Integer pageIndex;
   private BufferManager bufferManager;
+
   public Integer getPageIndex() {
     return pageIndex;
   }
@@ -86,7 +88,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record> extend
   BPlusTreeNode<K, V> split() {
     int from = (size() + 1) / 2;
     int to = size();
-    BPlusTreeLeafNode<K, V> newSiblingNode = new BPlusTreeLeafNode<>(to - from, this.pageCounter, this.bufferManager);
+    BPlusTreeLeafNode<K, V> newSiblingNode =
+        new BPlusTreeLeafNode<>(to - from, this.pageCounter, this.bufferManager);
     for (int i = 0; i < to - from; i++) {
       newSiblingNode.keys.set(i, keys.get(i + from));
       newSiblingNode.values.set(i, values.get(i + from));
@@ -100,10 +103,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record> extend
     // split the pages
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
     ArrayList<Row> siblingPage = bufferManager.readPage(newSiblingNode.pageIndex);
-    for (int i = from; i < to; i++)
-      siblingPage.add(page.get(i));
-    for (int i = from; i < to; i++)
-      page.remove(page.size()-1);
+    for (int i = from; i < to; i++) siblingPage.add(page.get(i));
+    for (int i = from; i < to; i++) page.remove(page.size() - 1);
     bufferManager.writePage(pageIndex, page);
     bufferManager.writePage(newSiblingNode.pageIndex, siblingPage);
 
@@ -124,7 +125,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record> extend
 
     // merge the pages
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
-    ArrayList<Row> siblingPage = bufferManager.readPage(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
+    ArrayList<Row> siblingPage =
+        bufferManager.readPage(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
     page.addAll(siblingPage);
     bufferManager.writePage(pageIndex, page);
     pageCounter.removeIndex(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);

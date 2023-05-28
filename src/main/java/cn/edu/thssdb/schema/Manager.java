@@ -22,7 +22,7 @@ public class Manager {
 
     try {
       lock.readLock().lock();
-//      System.out.println(currentDatabaseName.get(sessionId));
+      //      System.out.println(currentDatabaseName.get(sessionId));
       return getDatabaseHandler(currentDatabaseName.get(sessionId), read, write);
     } finally {
       lock.readLock().unlock();

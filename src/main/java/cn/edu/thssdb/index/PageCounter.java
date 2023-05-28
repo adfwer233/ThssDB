@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class PageCounter {
   public ArrayList<Integer> indexList = new ArrayList<Integer>();
+
   public int getMaxIndex() {
     return indexList.get(indexList.size() - 1);
   }

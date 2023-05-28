@@ -2,7 +2,6 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.index.BPlusTree;
-import cn.edu.thssdb.index.BPlusTreeIterator;
 import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
 import cn.edu.thssdb.utils.Global;
@@ -107,7 +106,7 @@ public class Table implements Iterable<Row> {
       if (!tableFolder.exists()) tableFolder.mkdirs();
 
       File tableFile = new File(getTablePath());
-      if (!tableFile.exists()) return ;
+      if (!tableFile.exists()) return;
 
       FileInputStream fileInputStream = new FileInputStream(tableFile);
       ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
@@ -123,9 +122,9 @@ public class Table implements Iterable<Row> {
       fileInputStream.close();
 
       // recover the b+tree in memory
-      for (Integer index: res.indexList) {
+      for (Integer index : res.indexList) {
         ArrayList<Row> page = this.index.bufferManager.readPage(index);
-        for (Row row: page) {
+        for (Row row : page) {
           Entry primary = row.getEntries().get(this.primaryIndex);
           this.index.put(primary, new Record());
         }
@@ -133,7 +132,6 @@ public class Table implements Iterable<Row> {
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
-
   }
 
   public void persist() {

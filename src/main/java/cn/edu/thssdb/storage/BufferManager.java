@@ -4,12 +4,10 @@ import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.schema.Table;
 
 import java.io.*;
-import java.nio.Buffer;
 import java.util.ArrayList;
-import java.util.Deque;
 
 public class BufferManager {
-  public final static Integer BufferSize = 10;
+  public static final Integer BufferSize = 10;
 
   private String tableName;
   private String tableDir;
@@ -18,6 +16,7 @@ public class BufferManager {
   ArrayList<Integer> bufferPageIndex = new ArrayList<>();
 
   ArrayList<Boolean> writeFlag = new ArrayList<>();
+
   public BufferManager(Table table) {
     tableName = table.tableName;
     tableDir = table.getTableFolderPath();
@@ -37,8 +36,7 @@ public class BufferManager {
      * If the page to drop has no write flag, do nothing
      * TODO: add page selection such as LRU
      * */
-    if (!pageWriteFlag)
-      return;
+    if (!pageWriteFlag) return;
 
     File folder = new File(tableDir);
     if (!folder.exists()) {
@@ -110,10 +108,10 @@ public class BufferManager {
   public void writePage(Integer pageIndex, ArrayList<Row> data) {
 
     /*
-    * If page in buffer
-    * replace the current buffered page
-    * set the dirty flag
-    * */
+     * If page in buffer
+     * replace the current buffered page
+     * set the dirty flag
+     * */
     if (bufferPageIndex.contains(pageIndex)) {
       buffer.set(bufferPageIndex.indexOf(pageIndex), data);
       writeFlag.set(bufferPageIndex.indexOf(pageIndex), true);
@@ -121,9 +119,9 @@ public class BufferManager {
     }
 
     /*
-    * If buffer is not full
-    * add the page to buffer
-    * */
+     * If buffer is not full
+     * add the page to buffer
+     * */
     if (buffer.size() <= BufferSize) {
       buffer.add(data);
       bufferPageIndex.add(pageIndex);
@@ -136,8 +134,8 @@ public class BufferManager {
 
   public ArrayList<Row> readPage(Integer pageIndex) {
     /*
-    * If page in buffer, just return it
-    * */
+     * If page in buffer, just return it
+     * */
     if (bufferPageIndex.indexOf(pageIndex) >= 0) {
       return buffer.get(bufferPageIndex.indexOf(pageIndex));
     }
@@ -146,16 +144,15 @@ public class BufferManager {
     ArrayList<Row> page = readPage(pageIndex);
 
     /*
-    * read page and put it into buffer.
-    * if the buffer is full, drop the first page.
-    * */
+     * read page and put it into buffer.
+     * if the buffer is full, drop the first page.
+     * */
 
     buffer.add(page);
     bufferPageIndex.add(pageIndex);
     writeFlag.add(false);
 
-    if (buffer.size() > BufferSize)
-      dropPage();
+    if (buffer.size() > BufferSize) dropPage();
 
     return page;
   }
@@ -166,9 +163,7 @@ public class BufferManager {
     }
   }
 
-  public void writeAllDirty() {
-
-  }
+  public void writeAllDirty() {}
 
   private String getPagePath(Integer page) {
     return tableDir + File.separator + tableName + page.toString();

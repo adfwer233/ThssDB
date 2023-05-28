@@ -107,8 +107,8 @@ public class IServiceHandler implements IService.Iface {
                 LogicalPlan.LogicalPlanType.DELETE));
 
     /*/
-     only log in transaction environment, autocommit needs no log
-     */
+    only log in transaction environment, autocommit needs no log
+    */
     if (logType.contains(plan.getType()) && manager.currentSessions.contains(currentSessionId)) {
       try (Database.DatabaseHandler db =
           manager.getCurrentDatabase(currentSessionId, true, false)) {

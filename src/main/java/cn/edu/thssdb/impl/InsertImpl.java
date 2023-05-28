@@ -79,9 +79,11 @@ public class InsertImpl {
               entry = new Entry(Double.parseDouble(entryString));
               break;
             case STRING:
-              entryString = entryString.substring(1, entryString.length()-1);
+              entryString = entryString.substring(1, entryString.length() - 1);
               if (entryString.length() > maxLength) {
-                System.out.println(String.format("Too long %d %d %s", entryString.length(), maxLength, entryString));
+                System.out.println(
+                    String.format(
+                        "Too long %d %d %s", entryString.length(), maxLength, entryString));
                 throw new StringEntryTooLongException();
               }
               entry = new Entry(entryString);

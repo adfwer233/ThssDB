@@ -5,13 +5,15 @@ import cn.edu.thssdb.schema.Table;
 import cn.edu.thssdb.storage.BufferManager;
 import cn.edu.thssdb.utils.Pair;
 
-public final class BPlusTree<K extends Comparable<K>, V extends Record> implements Iterable<Pair<K, V>> {
+public final class BPlusTree<K extends Comparable<K>, V extends Record>
+    implements Iterable<Pair<K, V>> {
 
   BPlusTreeNode<K, V> root;
   private int size;
   public PageCounter pageCounter;
 
   public BufferManager bufferManager;
+
   public BPlusTree(Table table) {
     pageCounter = new PageCounter();
     bufferManager = new BufferManager(table);

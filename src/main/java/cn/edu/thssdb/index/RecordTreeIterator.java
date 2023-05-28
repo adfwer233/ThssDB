@@ -16,6 +16,7 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
   private final LinkedList<Pair<Entry, Row>> buffer;
 
   private BufferManager bufferManager;
+
   public RecordTreeIterator(BPlusTree<Entry, Record> tree, Table table) {
     queue = new LinkedList<>();
     buffer = new LinkedList<>();

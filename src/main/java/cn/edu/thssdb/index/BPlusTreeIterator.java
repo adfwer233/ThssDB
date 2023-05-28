@@ -6,7 +6,8 @@ import cn.edu.thssdb.utils.Pair;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BPlusTreeIterator<K extends Comparable<K>, V extends Record> implements Iterator<Pair<K, V>> {
+public class BPlusTreeIterator<K extends Comparable<K>, V extends Record>
+    implements Iterator<Pair<K, V>> {
   private final LinkedList<BPlusTreeNode<K, V>> queue;
   private final LinkedList<Pair<K, V>> buffer;
 
