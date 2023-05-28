@@ -157,6 +157,14 @@ public class Manager {
       if (!databases.containsKey(databaseName)) {
         throw new KeyNotExistException();
       }
+      // delete the files
+      File dbFolder = new File(databases.get(databaseName).getDatabaseTableFolderPath());
+      File[] files = dbFolder.listFiles();
+      for (File file : files) {
+        System.out.println("[DROP DELETE] " + file.getPath());
+        file.delete();
+      }
+
       databases.remove(databaseName);
     } finally {
       lock.writeLock().unlock();

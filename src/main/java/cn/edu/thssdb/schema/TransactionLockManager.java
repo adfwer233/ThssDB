@@ -30,6 +30,7 @@ public class TransactionLockManager {
     }
 
     for (ReentrantReadWriteLock lock : writeLocks) {
+      System.out.println(String.format("[WRITE LOCK RELEASE]"));
       lock.writeLock().unlock();
     }
 

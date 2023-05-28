@@ -53,6 +53,7 @@ public class Table implements Iterable<Row> {
       // or abort).
       if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
         if (this.hasReadLock) {
+          System.out.println(String.format("[READ LOCK RELEASED %s]", table.tableName));
           this.table.lock.readLock().unlock();
           this.hasReadLock = false;
         }
@@ -135,33 +136,37 @@ public class Table implements Iterable<Row> {
   }
 
   public void persist() {
-    if (updateFlag) {
-      index.bufferManager.writeAllDirty();
-    }
-    updateFlag = false;
-
-    // persist the index (page indices)
     try {
-      File tableFolder = new File(getTableFolderPath());
-      if (!tableFolder.exists()) tableFolder.mkdirs();
+      lock.readLock().lock();
+      if (updateFlag) {
+        index.bufferManager.writeAllDirty();
+        // persist the index (page indices)
+        try {
+          File tableFolder = new File(getTableFolderPath());
+          if (!tableFolder.exists()) tableFolder.mkdirs();
 
-      File tableFile = new File(getTableIndexPath());
-      if (!tableFile.exists()) tableFile.createNewFile();
+          File tableFile = new File(getTableIndexPath());
+          if (!tableFile.exists()) tableFile.createNewFile();
 
-      System.out.println("[IO INDEX] " + tableFile);
+          System.out.println("[IO INDEX] " + tableFile);
 
-      FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
-      BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-      ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+          FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
+          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
 
-      objectOutputStream.writeObject(index.pageCounter);
+          objectOutputStream.writeObject(index.pageCounter);
 
-      objectOutputStream.close();
-      bufferedOutputStream.flush();
-      bufferedOutputStream.close();
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-      e.printStackTrace();
+          objectOutputStream.close();
+          bufferedOutputStream.flush();
+          bufferedOutputStream.close();
+        } catch (Exception e) {
+          System.out.println(e.getMessage());
+          e.printStackTrace();
+        }
+        updateFlag = false;
+      }
+    } finally {
+      lock.readLock().unlock();
     }
   }
 
@@ -181,7 +186,6 @@ public class Table implements Iterable<Row> {
       }
     }
 
-    System.out.println(entries);
     Record record = new Record(new Row(entries));
     index.put(entries.get(primaryIndex), record);
     updateFlag = true;

@@ -23,22 +23,9 @@ public class BufferManager {
     tableDir = table.getTableFolderPath();
   }
 
-  private void dropPage() {
-
-    Boolean pageWriteFlag = writeFlag.get(0);
-    writeFlag.remove(0);
-    ArrayList<Row> page = buffer.get(0);
-    buffer.remove(0);
-    Integer index = bufferPageIndex.get(0);
-    bufferPageIndex.remove(0);
-
-    /*
-     * Just Drop the oldest page
-     * If the page to drop has no write flag, do nothing
-     * TODO: add page selection such as LRU
-     * */
-    if (!pageWriteFlag) return;
-
+  private void writeIO(Integer index, ArrayList<Row> page) {
+    System.out.println(String.format("[Page IO WRITE] [BUFFER SIZE %d] %s",buffer.size() , tableName));
+    System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
       folder.mkdirs();
@@ -70,6 +57,25 @@ public class BufferManager {
     }
   }
 
+  private void dropPage() {
+
+    Boolean pageWriteFlag = writeFlag.get(0);
+    writeFlag.remove(0);
+    ArrayList<Row> page = buffer.get(0);
+    buffer.remove(0);
+    Integer index = bufferPageIndex.get(0);
+    bufferPageIndex.remove(0);
+
+    /*
+     * Just Drop the oldest page
+     * If the page to drop has no write flag, do nothing
+     * TODO: add page selection such as LRU
+     * */
+    if (!pageWriteFlag) return;
+
+    writeIO(index, page);
+  }
+
   private ArrayList<Row> getPage(Integer pageIndex) {
     File folder = new File(tableDir);
     if (!folder.exists()) {
@@ -88,7 +94,8 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
-      System.out.println("[Page IO Read] " + pagePath);
+      System.out.println(String.format("[Page IO Read] [BUFFER SIZE %d] %s",buffer.size() , pagePath));
+      System.out.flush();
       FileInputStream fileInputStream = new FileInputStream(pagePath);
 
       if (fileInputStream.available() <= 0) {
@@ -137,6 +144,7 @@ public class BufferManager {
       return;
     }
 
+    // buffer full
     dropPage();
   }
 
@@ -144,7 +152,8 @@ public class BufferManager {
     /*
      * If page in buffer, just return it
      * */
-    if (bufferPageIndex.indexOf(pageIndex) >= 0) {
+    if (bufferPageIndex.contains(pageIndex)) {
+//      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
       return buffer.get(bufferPageIndex.indexOf(pageIndex));
     }
 
@@ -172,7 +181,12 @@ public class BufferManager {
   }
 
   public void writeAllDirty() {
-    flush();
+    for (int i = 0; i < buffer.size(); i++) {
+      if (writeFlag.get(i)) {
+        writeIO(bufferPageIndex.get(i), buffer.get(i));
+        writeFlag.set(i, false);
+      }
+    }
   }
 
   private String getPagePath(Integer page) {

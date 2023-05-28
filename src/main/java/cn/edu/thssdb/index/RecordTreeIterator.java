@@ -22,7 +22,7 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
     buffer = new LinkedList<>();
     if (tree.size() == 0) return;
     queue.add(tree.root);
-    bufferManager = new BufferManager(table);
+    bufferManager = tree.bufferManager;
   }
 
   @Override
@@ -38,7 +38,7 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
         if (node instanceof BPlusTreeLeafNode) {
           int pageIndex = ((BPlusTreeLeafNode<Entry, Record>) node).getPageIndex();
           ArrayList<Row> pageRows = bufferManager.readPage(pageIndex);
-          System.out.println(pageRows);
+//          System.out.println(pageRows);
           for (int i = 0; i < node.size(); i++) {
             buffer.add(new Pair<>(node.keys.get(i), pageRows.get(i)));
           }

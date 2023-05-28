@@ -7,6 +7,7 @@ import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.storage.BufferManager;
 import cn.edu.thssdb.utils.Global;
 
+import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -66,6 +67,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
       keysAdd(valueIndex, key);
     }
     bufferManager.writePage(pageIndex, page);
+//    nodeSize ++;
+    System.out.println(String.format("[B PLUS LEAF] SIZE %d %d", nodeSize, page.size()));
   }
 
   @Override
@@ -103,9 +106,10 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
 
     // split the pages
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
-    ArrayList<Row> siblingPage = bufferManager.readPage(newSiblingNode.pageIndex);
+    ArrayList<Row> siblingPage = new ArrayList<>();
     for (int i = from; i < to; i++) siblingPage.add(page.get(i));
     for (int i = from; i < to; i++) page.remove(page.size() - 1);
+    System.out.println(String.format("[Split] %d %d", page.size(), siblingPage.size()));
     bufferManager.writePage(pageIndex, page);
     bufferManager.writePage(newSiblingNode.pageIndex, siblingPage);
 
