@@ -38,6 +38,7 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
         if (node instanceof BPlusTreeLeafNode) {
           int pageIndex = ((BPlusTreeLeafNode<Entry, Record>) node).getPageIndex();
           ArrayList<Row> pageRows = bufferManager.readPage(pageIndex);
+          System.out.println(pageRows);
           for (int i = 0; i < node.size(); i++) {
             buffer.add(new Pair<>(node.keys.get(i), pageRows.get(i)));
           }

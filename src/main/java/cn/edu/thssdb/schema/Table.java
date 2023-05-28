@@ -167,15 +167,21 @@ public class Table implements Iterable<Row> {
 
   public void insert(ArrayList<Entry> entriesToInsert, ArrayList<String> attrList) {
     ArrayList<Entry> entries = new ArrayList<>();
-    for (int i = 0; i < columns.size(); i++) {
-      Integer index = attrList.indexOf(columns.get(i).getName());
-      if (index >= 0) {
-        entries.add(entriesToInsert.get(index));
-      } else {
-        entries.add(null);
+
+    if (attrList.isEmpty()) {
+      entries.addAll(entriesToInsert);
+    } else {
+      for (Column column : columns) {
+        int index = attrList.indexOf(column.getName());
+        if (index >= 0) {
+          entries.add(entriesToInsert.get(index));
+        } else {
+          entries.add(null);
+        }
       }
     }
 
+    System.out.println(entries);
     Record record = new Record(new Row(entries));
     index.put(entries.get(primaryIndex), record);
     updateFlag = true;

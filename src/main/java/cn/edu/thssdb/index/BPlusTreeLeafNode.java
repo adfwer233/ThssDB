@@ -29,6 +29,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     nodeSize = size;
     this.pageIndex = pageCounter.allocNewIndex();
     this.pageCounter = pageCounter;
+    this.bufferManager = bufferManager;
   }
 
   private void valuesAdd(int index, V value) {

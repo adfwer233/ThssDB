@@ -25,6 +25,7 @@ public class Global {
 
   public static final String INDEX_SUFFIX = "_index";
 
+  public static final String PAGE_SUFFIX = "_page_";
   public enum IsolationLevel {
     READ_COMMITTED,
     SERIALIZABLE

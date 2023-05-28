@@ -6,6 +6,7 @@ import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.utils.Global;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -150,7 +151,7 @@ public class Database {
       if (!file.isFile() || !file.getName().endsWith(Global.META_SUFFIX)) continue;
       String tableName = file.getName().replace(Global.META_SUFFIX, "");
       try {
-        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(file));
+        InputStreamReader inputStreamReader = new InputStreamReader(Files.newInputStream(file.toPath()));
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ArrayList<String> columnMetas = new ArrayList<String>();
         String tmpColumnMeta;
@@ -159,19 +160,19 @@ public class Database {
         }
         inputStreamReader.close();
         bufferedReader.close();
-        ArrayList<Column> columns = new ArrayList();
+        ArrayList<Column> columns = new ArrayList<>();
         for (String columnMeta : columnMetas) {
           columns.add(Column.createColumnFromMeta(columnMeta));
         }
 
-        Table newTable = new Table(this.name, tableName, columns.stream().toArray(Column[]::new));
-
+        Table newTable = new Table(this.name, tableName, columns.toArray(new Column[0]));
+        System.out.println(columnMetas);
         // Recover the new table data from table file
         newTable.recover();
 
         this.tables.put(tableName, newTable);
       } catch (Exception e) {
-
+        e.printStackTrace();
       }
     }
   }

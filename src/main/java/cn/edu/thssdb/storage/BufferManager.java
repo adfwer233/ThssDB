@@ -2,6 +2,7 @@ package cn.edu.thssdb.storage;
 
 import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.schema.Table;
+import cn.edu.thssdb.utils.Global;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -79,6 +80,7 @@ public class BufferManager {
     if (!pagePath.exists()) {
       try {
         pagePath.createNewFile();
+        return new ArrayList<>();
       } catch (IOException e) {
         e.printStackTrace();
       }
@@ -86,9 +88,15 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
+      System.out.println("[Page IO Read] " + pagePath);
       FileInputStream fileInputStream = new FileInputStream(pagePath);
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-      ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
+
+      if (fileInputStream.available() <= 0) {
+        return res;
+      }
+
+//      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+      ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
       Object inputObject;
       while (fileInputStream.available() > 0) {
@@ -96,8 +104,8 @@ public class BufferManager {
         res.add((Row) inputObject);
       }
 
-      bufferedInputStream.close();
       fileInputStream.close();
+      objectInputStream.close();
     } catch (IOException | ClassNotFoundException e) {
       e.printStackTrace();
     }
@@ -141,7 +149,7 @@ public class BufferManager {
     }
 
     // get page from file system
-    ArrayList<Row> page = readPage(pageIndex);
+    ArrayList<Row> page = getPage(pageIndex);
 
     /*
      * read page and put it into buffer.
@@ -163,9 +171,11 @@ public class BufferManager {
     }
   }
 
-  public void writeAllDirty() {}
+  public void writeAllDirty() {
+    flush();
+  }
 
   private String getPagePath(Integer page) {
-    return tableDir + File.separator + tableName + page.toString();
+    return tableDir + File.separator + tableName + Global.PAGE_SUFFIX + page.toString();
   }
 }
