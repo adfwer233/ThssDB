@@ -2,6 +2,7 @@ package cn.edu.thssdb.schema;
 
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.index.BPlusTree;
+import cn.edu.thssdb.index.BPlusTreeLeafNode;
 import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
 import cn.edu.thssdb.utils.Global;
@@ -17,7 +18,7 @@ public class Table implements Iterable<Row> {
   public String tableName;
   public ArrayList<Column> columns;
   private BPlusTree<Entry, Record> index;
-  private int primaryIndex = 0;
+  public int primaryIndex = 0;
 
   private Boolean updateFlag = false;
 
@@ -189,6 +190,32 @@ public class Table implements Iterable<Row> {
     Record record = new Record(new Row(entries));
     index.put(entries.get(primaryIndex), record);
     updateFlag = true;
+  }
+
+  public ArrayList<Row> getRowsByPrimaryKey(Entry key) {
+    ArrayList<Row> rows = new ArrayList<>();
+    try {
+      BPlusTreeLeafNode<Entry, Record> leafNode = index.getLeafNode(key);
+      while (leafNode != null) {
+
+        Integer pageIndex = leafNode.getPageIndex();
+        ArrayList<Row> page = index.bufferManager.readPage(pageIndex);
+        boolean found = false;
+        for (Row row : page) {
+          if (row.getEntries().get(primaryIndex).equals(key)) {
+            found = true;
+            rows.add(row);
+          }
+        }
+        if (!found) break;
+        leafNode = leafNode.getNext();
+      }
+      //      System.out.println("[GET RESULT] " + rows.size());
+      return rows;
+    } catch (KeyNotExistException e) {
+      //      e.printStackTrace();
+      return rows;
+    }
   }
 
   public void insert(Row row) {

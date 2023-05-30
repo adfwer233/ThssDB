@@ -151,7 +151,8 @@ public class Database {
       if (!file.isFile() || !file.getName().endsWith(Global.META_SUFFIX)) continue;
       String tableName = file.getName().replace(Global.META_SUFFIX, "");
       try {
-        InputStreamReader inputStreamReader = new InputStreamReader(Files.newInputStream(file.toPath()));
+        InputStreamReader inputStreamReader =
+            new InputStreamReader(Files.newInputStream(file.toPath()));
         BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ArrayList<String> columnMetas = new ArrayList<String>();
         String tmpColumnMeta;

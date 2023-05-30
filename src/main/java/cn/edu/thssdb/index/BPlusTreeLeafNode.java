@@ -7,7 +7,6 @@ import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.storage.BufferManager;
 import cn.edu.thssdb.utils.Global;
 
-import javax.swing.plaf.synth.SynthTextAreaUI;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -55,19 +54,31 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
   }
 
   @Override
+  BPlusTreeLeafNode<K, V> getLeafNode(K key) {
+    int index = binarySearch(key);
+    if (index >= 0) return this;
+    //    System.out.println(this.keys.toString() + "---" +  key.toString());
+    throw new KeyNotExistException();
+  }
+
+  @Override
   void put(K key, V value) {
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
     int index = binarySearch(key);
     int valueIndex = index >= 0 ? index : -index - 1;
-    if (index >= 0) throw new DuplicateKeyException();
-    else {
+    if (index >= 0) {
+      System.out.println(keys.get(index));
+      System.out.println(key);
+      System.out.println(value);
+      throw new DuplicateKeyException();
+    } else {
       page.add(valueIndex, value.getContent());
       value.removeContent();
       valuesAdd(valueIndex, value);
       keysAdd(valueIndex, key);
     }
     bufferManager.writePage(pageIndex, page);
-//    nodeSize ++;
+    //    nodeSize ++;
     System.out.println(String.format("[B PLUS LEAF] SIZE %d %d", nodeSize, page.size()));
   }
 
@@ -135,5 +146,9 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     page.addAll(siblingPage);
     bufferManager.writePage(pageIndex, page);
     pageCounter.removeIndex(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
+  }
+
+  public BPlusTreeLeafNode<K, V> getNext() {
+    return next;
   }
 }

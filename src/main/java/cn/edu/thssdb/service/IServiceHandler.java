@@ -53,7 +53,7 @@ public class IServiceHandler implements IService.Iface {
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
 
-    System.out.println(String.format("[Statement %d] %s", req.getSessionId() , req.statement));
+    System.out.println(String.format("[Statement %d] %s", req.getSessionId(), req.statement));
     System.out.flush();
     // TODO: maintain a map from session id to current database
     long currentSessionId = req.getSessionId();
@@ -122,13 +122,13 @@ public class IServiceHandler implements IService.Iface {
 
     ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
 
-
     if (!manager.currentSessions.contains(currentSessionId)) {
       manager.releaseTransactionLocks(currentSessionId);
       if (logType.contains(plan.getType())) {
         manager.persistCurrentDatabase(currentSessionId);
       }
-      System.out.println(String.format("[RELEASE TABLE LOCK %d] %s", req.getSessionId() , req.statement));
+      System.out.println(
+          String.format("[RELEASE TABLE LOCK %d] %s", req.getSessionId(), req.statement));
     }
 
     return resp;

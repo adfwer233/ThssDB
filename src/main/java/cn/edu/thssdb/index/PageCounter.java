@@ -6,6 +6,7 @@ import java.util.ArrayList;
 public class PageCounter implements Serializable {
   public ArrayList<Integer> indexList = new ArrayList<>();
   private static final long serialVersionUID = -5809782578123943999L;
+
   public int getMaxIndex() {
     return indexList.get(indexList.size() - 1);
   }

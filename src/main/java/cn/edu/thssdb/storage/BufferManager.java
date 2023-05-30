@@ -24,7 +24,8 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    System.out.println(String.format("[Page IO WRITE] [BUFFER SIZE %d] %s",buffer.size() , tableName));
+    System.out.println(
+        String.format("[Page IO WRITE] [BUFFER SIZE %d] %s", buffer.size(), tableName));
     System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
@@ -94,7 +95,8 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
-      System.out.println(String.format("[Page IO Read] [BUFFER SIZE %d] %s",buffer.size() , pagePath));
+      System.out.println(
+          String.format("[Page IO Read] [BUFFER SIZE %d] %s", buffer.size(), pagePath));
       System.out.flush();
       FileInputStream fileInputStream = new FileInputStream(pagePath);
 
@@ -102,7 +104,7 @@ public class BufferManager {
         return res;
       }
 
-//      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+      //      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
       ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
       Object inputObject;
@@ -153,7 +155,7 @@ public class BufferManager {
      * If page in buffer, just return it
      * */
     if (bufferPageIndex.contains(pageIndex)) {
-//      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
+      //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
       return buffer.get(bufferPageIndex.indexOf(pageIndex));
     }
 

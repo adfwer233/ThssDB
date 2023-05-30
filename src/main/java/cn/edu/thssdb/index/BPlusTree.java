@@ -29,6 +29,11 @@ public final class BPlusTree<K extends Comparable<K>, V extends Record>
     return root.get(key);
   }
 
+  public BPlusTreeLeafNode<K, V> getLeafNode(K key) {
+    if (key == null) throw new IllegalArgumentException("argument key to get() is null");
+    return root.getLeafNode(key);
+  }
+
   public void update(K key, V value) {
     root.remove(key);
     root.put(key, value);

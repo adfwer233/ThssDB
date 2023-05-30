@@ -1,5 +1,6 @@
 package cn.edu.thssdb.query;
 
+import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.schema.Column;
 import cn.edu.thssdb.schema.Entry;
 import cn.edu.thssdb.schema.Row;
@@ -27,6 +28,18 @@ public class QueryTable implements Iterator<Row> {
     }
   }
 
+  public QueryTable(Table table1, Table table2, ArrayList<Row> rows) {
+    this.rows = new ArrayList<>();
+    this.columns = new ArrayList<>();
+    for (Column col : table1.getColumns()) {
+      columns.add(new Column(table1.tableName + "." + col.getName()));
+    }
+    for (Column col : table2.getColumns()) {
+      columns.add(new Column(table1.tableName + "." + col.getName()));
+    }
+    this.rows.addAll(rows);
+  }
+
   @Override
   public boolean hasNext() {
     return rows.iterator().hasNext();
@@ -36,6 +49,8 @@ public class QueryTable implements Iterator<Row> {
   public Row next() {
     return rows.iterator().next();
   }
+
+  public void joinTableWithCondition(Table rightTable, MultipleConditionPlan conditon) {}
 
   public void joinWithTable(Table rightTable) {
     List<Column> newColumns = new ArrayList<>();
