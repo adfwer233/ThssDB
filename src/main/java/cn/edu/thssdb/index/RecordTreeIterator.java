@@ -45,7 +45,13 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
               buffer.add(new Pair<>(node.keys.get(i), pageRows.get(i)));
             }
           } catch (IndexOutOfBoundsException e) {
-            System.out.println("[INDEX OUT OF RANGE] " + node.keys.size() + " " + node.nodeSize + " " + pageRows.size());
+            System.out.println(
+                "[INDEX OUT OF RANGE] "
+                    + node.keys.size()
+                    + " "
+                    + node.nodeSize
+                    + " "
+                    + pageRows.size());
             e.printStackTrace();
             throw e;
           }
