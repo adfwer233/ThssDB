@@ -177,6 +177,7 @@ public class PlanHandler {
           return resp;
         } catch (Exception e) {
           e.printStackTrace();
+          System.out.flush();
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case QUIT:

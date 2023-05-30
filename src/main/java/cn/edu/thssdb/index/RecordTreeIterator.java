@@ -40,12 +40,18 @@ public class RecordTreeIterator implements Iterator<Pair<Entry, Row>> {
           ArrayList<Row> pageRows = bufferManager.readPage(pageIndex);
           //          System.out.println(String.format("[Read page]: Page size %s, Node size %s",
           // pageRows.size(), node.nodeSize));
-          for (int i = 0; i < node.size(); i++) {
-            buffer.add(new Pair<>(node.keys.get(i), pageRows.get(i)));
+          try {
+            for (int i = 0; i < node.nodeSize; i++) {
+              buffer.add(new Pair<>(node.keys.get(i), pageRows.get(i)));
+            }
+          } catch (IndexOutOfBoundsException e) {
+            System.out.println("[INDEX OUT OF RANGE] " + node.keys.size() + " " + node.nodeSize + " " + pageRows.size());
+            e.printStackTrace();
+            throw e;
           }
           break;
         } else if (node instanceof BPlusTreeInternalNode)
-          for (int i = 0; i <= node.size(); i++)
+          for (int i = 0; i <= node.nodeSize; i++)
             queue.add(((BPlusTreeInternalNode<Entry, Record>) node).children.get(i));
       }
     }

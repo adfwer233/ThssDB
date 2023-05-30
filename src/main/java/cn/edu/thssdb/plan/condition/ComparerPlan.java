@@ -71,6 +71,7 @@ public class ComparerPlan extends LogicalPlan {
         if (index == -1) {
           index = ColumnName.indexOf(this.columnName);
         }
+//        System.out.println("[Comparator] " + this.columnName + " " + ColumnName.toString());
         Entry entry = row.getEntries().get(index);
         if (entry == null) {
           throw new KeyException();

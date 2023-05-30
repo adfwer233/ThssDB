@@ -90,6 +90,7 @@ public class SingleConditionPlan extends LogicalPlan {
 
       return conditionResult;
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println(
           "Get Error in ConditionItem.evaluate()\n" + e.getMessage() + ' ' + e.getClass());
       return null;

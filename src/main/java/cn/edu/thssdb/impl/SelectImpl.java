@@ -78,12 +78,16 @@ public class SelectImpl {
           Table table2 = tableHandler2.getTable();
           for (Row row : table1) {
             Entry attr1 = row.getEntries().get(table1.primaryIndex);
-            System.out.println(attr1);
+//            System.out.println(attr1);
             ArrayList<Row> findRows = table2.getRowsByPrimaryKey(attr1);
             res.addAll(findRows);
           }
           System.out.println("[PRIMARY JOIN] " + res.size());
           targetTable = new QueryTable(table1, table2, res);
+
+          for (Column column : targetTable.columns) {
+            columnNames.add(column.getName());
+          }
         }
       }
     } else {

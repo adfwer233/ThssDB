@@ -1,6 +1,7 @@
 package cn.edu.thssdb.impl;
 
 import cn.edu.thssdb.exception.AttributeValueNotMatchException;
+import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.exception.InsertException.AttributeNameNotExistException;
 import cn.edu.thssdb.exception.InsertException.StringEntryTooLongException;
 import cn.edu.thssdb.exception.TableNotExistException;
@@ -108,6 +109,8 @@ public class InsertImpl {
         table.insert(entries, tmp);
       }
       //      System.out.println(table.printTable());
+    } catch (DuplicateKeyException e) {
+      System.out.println("[Duplicate Key]");
     } catch (Exception e) {
       e.printStackTrace();
     }

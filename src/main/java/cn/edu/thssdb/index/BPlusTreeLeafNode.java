@@ -91,6 +91,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
       keysRemove(index);
       page.remove(index);
     } else throw new KeyNotExistException();
+    System.out.println(String.format("[REMOVE %d %d]", page.size(),nodeSize));
     bufferManager.writePage(pageIndex, page);
   }
 
@@ -120,7 +121,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     ArrayList<Row> siblingPage = new ArrayList<>();
     for (int i = from; i < to; i++) siblingPage.add(page.get(i));
     for (int i = from; i < to; i++) page.remove(page.size() - 1);
-    System.out.println(String.format("[Split] %d %d", page.size(), siblingPage.size()));
+    System.out.println(String.format("[Split] %d %d %d %d", page.size(), siblingPage.size(), nodeSize, newSiblingNode.nodeSize));
     bufferManager.writePage(pageIndex, page);
     bufferManager.writePage(newSiblingNode.pageIndex, siblingPage);
 
