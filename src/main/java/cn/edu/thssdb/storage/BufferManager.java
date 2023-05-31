@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class BufferManager {
-  public static final Integer BufferSize = 10;
+  public static final Integer BufferSize = 100;
 
   private String tableName;
   private String tableDir;
@@ -59,22 +59,20 @@ public class BufferManager {
   }
 
   private void dropPage() {
-
-    Boolean pageWriteFlag = writeFlag.get(0);
-    writeFlag.remove(0);
-    ArrayList<Row> page = buffer.get(0);
-    buffer.remove(0);
-    Integer index = bufferPageIndex.get(0);
-    bufferPageIndex.remove(0);
+    for (int i = 0 ; i < buffer.size(); i++) {
+      if (!writeFlag.get(i)) {
+        writeIO(bufferPageIndex.get(i), buffer.get(i));
+        buffer.remove(i);
+        bufferPageIndex.remove(i);
+        writeFlag.remove(i);
+      }
+    }
 
     /*
-     * Just Drop the oldest page
-     * If the page to drop has no write flag, do nothing
-     * TODO: add page selection such as LRU
-     * */
-    if (!pageWriteFlag) return;
+      if all pages are dirty pages, no page will be drop
+      if a transaction write too many pages, the memory of buffer will be very large......
+     */
 
-    writeIO(index, page);
   }
 
   private ArrayList<Row> getPage(Integer pageIndex) {
