@@ -53,8 +53,8 @@ public class IServiceHandler implements IService.Iface {
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
 
-    System.out.println("[Statement] " + req.statement);
-
+    System.out.println(String.format("[Statement %d] %s", req.getSessionId(), req.statement));
+    System.out.flush();
     // TODO: maintain a map from session id to current database
     long currentSessionId = req.getSessionId();
 
@@ -107,8 +107,10 @@ public class IServiceHandler implements IService.Iface {
                 LogicalPlan.LogicalPlanType.DELETE,
                 LogicalPlan.LogicalPlanType.UPDATE));
 
-    if (logType.contains(plan.getType())) {
-      // get write lock before write log
+    /*/
+    only log in transaction environment, autocommit needs no log
+    */
+    if (logType.contains(plan.getType()) && manager.currentSessions.contains(currentSessionId)) {
       try (Database.DatabaseHandler db =
           manager.getCurrentDatabase(currentSessionId, true, false)) {
         db.getDatabase().logger.writeLog(req.statement);
@@ -121,10 +123,13 @@ public class IServiceHandler implements IService.Iface {
 
     ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
 
-    // auto commit
     if (!manager.currentSessions.contains(currentSessionId)) {
-      manager.persistCurrentDatabase(currentSessionId);
       manager.releaseTransactionLocks(currentSessionId);
+      if (logType.contains(plan.getType())) {
+        manager.persistCurrentDatabase(currentSessionId);
+      }
+      System.out.println(
+          String.format("[RELEASE TABLE LOCK %d] %s", req.getSessionId(), req.statement));
     }
 
     return resp;

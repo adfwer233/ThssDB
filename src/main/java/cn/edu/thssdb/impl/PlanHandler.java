@@ -237,6 +237,8 @@ public class PlanHandler {
               queryTable.columns.stream().map(x -> x.getName()).collect(Collectors.toList()));
           return resp;
         } catch (Exception e) {
+          e.printStackTrace();
+          System.out.flush();
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case QUIT:

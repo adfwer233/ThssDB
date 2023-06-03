@@ -1,11 +1,13 @@
 package cn.edu.thssdb.index;
 
+import cn.edu.thssdb.schema.Record;
 import cn.edu.thssdb.utils.Global;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
-public final class BPlusTreeInternalNode<K extends Comparable<K>, V> extends BPlusTreeNode<K, V> {
+public final class BPlusTreeInternalNode<K extends Comparable<K>, V extends Record>
+    extends BPlusTreeNode<K, V> {
 
   ArrayList<BPlusTreeNode<K, V>> children;
 
@@ -36,6 +38,11 @@ public final class BPlusTreeInternalNode<K extends Comparable<K>, V> extends BPl
   @Override
   V get(K key) {
     return searchChild(key).get(key);
+  }
+
+  @Override
+  BPlusTreeLeafNode<K, V> getLeafNode(K key) {
+    return searchChild(key).getLeafNode(key);
   }
 
   @Override
