@@ -59,7 +59,7 @@ public class BufferManager {
   }
 
   private void dropPage() {
-    for (int i = 0 ; i < buffer.size(); i++) {
+    for (int i = 0; i < buffer.size(); i++) {
       if (!writeFlag.get(i)) {
         writeIO(bufferPageIndex.get(i), buffer.get(i));
         buffer.remove(i);
@@ -69,9 +69,9 @@ public class BufferManager {
     }
 
     /*
-      if all pages are dirty pages, no page will be drop
-      if a transaction write too many pages, the memory of buffer will be very large......
-     */
+     if all pages are dirty pages, no page will be drop
+     if a transaction write too many pages, the memory of buffer will be very large......
+    */
 
   }
 
