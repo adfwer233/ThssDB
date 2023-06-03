@@ -141,10 +141,6 @@ public class Database {
     return null;
   }
 
-  public void UpdateTable(Entry entry, Row row, String TableName) {
-    this.tables.get(TableName).update(entry, row);
-  }
-
   public void recover() {
     File tableFolder = new File(this.getDatabaseTableFolderPath());
     File[] files = tableFolder.listFiles();
@@ -234,19 +230,24 @@ public class Database {
   public Table.TableHandler getTableForSession(
       Long sessionId, String tableName, Boolean read, Boolean write) {
     if (transactionLockManagers.containsKey(sessionId)) {
-      return transactionLockManagers.get(sessionId).getTableHandler(this, tableName, read, write);
+      TransactionLockManager transactionLockManager = transactionLockManagers.get(sessionId);
+      return transactionLockManager.getTableHandler(this, tableName, read, write);
     } else {
       // TODO: Exception
-      return getTable(tableName, read, write);
+      return getTable(tableName, read, write, new TransactionLockManager());
     }
   }
 
-  Table.TableHandler getTable(String tableName, Boolean read, Boolean write) {
+  Table.TableHandler getTable(
+      String tableName,
+      Boolean read,
+      Boolean write,
+      TransactionLockManager transactionLockManager) {
 
     if (read) {
-      return tables.get(tableName).getReadHandler();
+      return tables.get(tableName).getReadHandler(transactionLockManager);
     } else if (write) {
-      return tables.get(tableName).getWriteHandler();
+      return tables.get(tableName).getWriteHandler(transactionLockManager);
     }
     return null;
   }

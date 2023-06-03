@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class BufferManager {
-  public static final Integer BufferSize = 100;
+  public static final Integer BufferSize = 150;
 
   private String tableName;
   private String tableDir;

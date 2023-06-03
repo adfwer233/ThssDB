@@ -5,8 +5,6 @@ import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.index.BPlusTreeLeafNode;
 import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
-import cn.edu.thssdb.index.BPlusTreeIterator;
-import cn.edu.thssdb.utils.Cell;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
@@ -31,7 +29,8 @@ public class Table implements Iterable<Row> {
     public Boolean hasReadLock;
     public Boolean hasWriteLock;
 
-    public TableHandler(Table table, Boolean read, Boolean write) {
+    public TableHandler(
+        Table table, Boolean read, Boolean write, TransactionLockManager transactionLockManager) {
       this.table = table;
       this.hasReadLock = read;
       this.hasWriteLock = write;
@@ -41,7 +40,20 @@ public class Table implements Iterable<Row> {
       }
 
       if (write) {
-        table.lock.writeLock().lock();
+        if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
+          table.lock.writeLock().lock();
+        } else if (Global.isolationLevel == Global.IsolationLevel.SERIALIZABLE) {
+          if (table.lock.isWriteLocked()) {
+            table.lock.writeLock().lock();
+          } else {
+            if (!table.lock.writeLock().tryLock()) {
+              System.out.println("[UPDATE LOCK]");
+              // 再次获取
+              transactionLockManager.releaseReadLock(lock);
+              table.lock.writeLock().lock();
+            }
+          }
+        }
       }
     }
 
@@ -64,12 +76,12 @@ public class Table implements Iterable<Row> {
     }
   }
 
-  public Table.TableHandler getReadHandler() {
-    return new Table.TableHandler(this, true, false);
+  public Table.TableHandler getReadHandler(TransactionLockManager transactionLockManager) {
+    return new Table.TableHandler(this, true, false, transactionLockManager);
   }
 
-  public Table.TableHandler getWriteHandler() {
-    return new Table.TableHandler(this, false, true);
+  public Table.TableHandler getWriteHandler(TransactionLockManager transactionLockManager) {
+    return new Table.TableHandler(this, false, true, transactionLockManager);
   }
 
   public Table(String databaseName, String tableName, Column[] columns) {
@@ -231,7 +243,7 @@ public class Table implements Iterable<Row> {
   public String printTable() {
     String res = "";
     for (Row row : this) {
-      res = res.concat(row.toString() + ' ');
+      res = res.concat(row.toString() + '\n');
     }
     return res;
   }
@@ -244,17 +256,17 @@ public class Table implements Iterable<Row> {
     updateFlag = true;
   }
 
-  public void update(Entry entry, Row newRow) {
+  public void update(Entry entry, Row newRow, ArrayList<String> attrList) {
     this.index.remove(entry);
-    this.index.put(newRow.getEntries().get(this.primaryIndex), newRow);
+    this.insert(newRow.getEntries(), attrList);
   }
 
   public int Column2Index(String columnName) {
     ArrayList<String> columnNames = new ArrayList<>();
-    for (Column column:this.columns) {
+    for (Column column : this.columns) {
       columnNames.add(column.getName());
     }
-    return columnName.indexOf(columnName);
+    return columnNames.indexOf(columnName);
   }
 
   private void serialize() {

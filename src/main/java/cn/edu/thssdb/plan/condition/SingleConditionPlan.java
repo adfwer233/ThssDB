@@ -40,9 +40,13 @@ public class SingleConditionPlan extends LogicalPlan {
       expr2.ComparerRes(row, columnName);
       Object value2 = expr2.getValue(row, columnName);
 
+      //      System.out.println("Comparing");
+      //      System.out.println(expr1 + " " + expr2);
+      //      System.out.println(expr1.type + " " + expr2.type);
+      //      System.out.println(value1 + " " + value2);
       if (value1 == null || value2 == null) {
         if (comparator.equals("=")) {
-          return value1 == value2;
+          return value1.equals(value2);
         } else if (comparator.equals("<>")) {
           return value1 != value2;
         } else {

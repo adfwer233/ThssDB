@@ -103,6 +103,8 @@ public class SelectImpl {
         }
       }
 
+      //      System.out.println(targetTable.toString());
+
       for (Column column : targetTable.columns) {
         columnNames.add(column.getName());
       }
@@ -166,7 +168,6 @@ public class SelectImpl {
     }
 
     targetTable.rows = selectedRows;
-
     return targetTable;
   }
 }

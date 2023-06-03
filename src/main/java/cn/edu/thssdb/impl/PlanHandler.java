@@ -121,15 +121,17 @@ public class PlanHandler {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case UPDATE:
-        System.out.println("UPDATE");
         UpdatePlan updatePlan = (UpdatePlan) plan;
-        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+        try (Database.DatabaseHandler currentDatabaseHandler =
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           Database currentDataBase = currentDatabaseHandler.getDatabase();
           if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          try (Table.TableHandler tableHandler = currentDataBase.getTableForSession(currentSessionId, updatePlan.getTableName(), false, true)) {
+          try (Table.TableHandler tableHandler =
+              currentDataBase.getTableForSession(
+                  currentSessionId, updatePlan.getTableName(), false, true)) {
             Table currentTable = tableHandler.getTable();
 
-            //获取columnNames
+            // 获取columnNames
             ArrayList<String> columnNames = new ArrayList<>();
             ArrayList<Column> columns = currentTable.getColumns();
             for (Column c : columns) {
@@ -148,6 +150,14 @@ public class PlanHandler {
             } else {
               while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
+                for (Entry entry : row.getEntries()) {
+                  System.out.println(
+                      entry.value
+                          + " "
+                          + entry.equals(new Entry(1))
+                          + " "
+                          + (entry == new Entry(1)));
+                }
                 if (whereCond.ConditionVerify(row, columnNames)) {
                   row2Update.add(row);
                 }
@@ -155,8 +165,8 @@ public class PlanHandler {
             }
 
             // Update
-            String columeName = updatePlan.getColumnName();
-            int index = currentTable.Column2Index(columeName);
+            String columnName = updatePlan.getColumnName();
+            int index = currentTable.Column2Index(columnName);
             ComparerPlan expr = updatePlan.getExpr();
             Entry newEntry = new Entry((Comparable) expr.getValue());
 
@@ -171,9 +181,15 @@ public class PlanHandler {
                 }
               }
               Entry primaryE = entries.get(currentTable.getPrimaryIndex());
-
-              currentDataBase.UpdateTable(primaryE, newRow, currentTable.tableName);
+              System.out.println(row);
+              System.out.println(newRow);
+              System.out.println(columnNames);
+              System.out.println(columnName + " " + index);
+              currentTable.update(primaryE, newRow, columnNames);
             }
+            System.out.println("UPDATE");
+            System.out.println(row2Update);
+            System.out.println(currentTable.printTable());
             return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
           }
         } catch (Exception e) {

@@ -6,34 +6,36 @@ import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 
 public class UpdatePlan extends LogicalPlan {
 
-    private String tableName;
+  private String tableName;
 
-    private String columnName;
+  private String columnName;
 
-    private MultipleConditionPlan whereCond;
+  private MultipleConditionPlan whereCond;
 
-    private ComparerPlan expr;
-    public UpdatePlan(String tableName, MultipleConditionPlan whereCond, String columnName, ComparerPlan expr) {
-        super(LogicalPlanType.UPDATE);
-        this.whereCond = whereCond;
-        this.tableName = tableName;
-        this.columnName = columnName;
-        this.expr = expr;
-    }
+  private ComparerPlan expr;
 
-    public String getTableName() {
-        return tableName;
-    }
+  public UpdatePlan(
+      String tableName, MultipleConditionPlan whereCond, String columnName, ComparerPlan expr) {
+    super(LogicalPlanType.UPDATE);
+    this.whereCond = whereCond;
+    this.tableName = tableName;
+    this.columnName = columnName;
+    this.expr = expr;
+  }
 
-    public MultipleConditionPlan getWhereCond() {
-        return whereCond;
-    }
+  public String getTableName() {
+    return tableName;
+  }
 
-    public String getColumnName() {
-        return columnName;
-    }
+  public MultipleConditionPlan getWhereCond() {
+    return whereCond;
+  }
 
-    public ComparerPlan getExpr() {
-        return expr;
-    }
+  public String getColumnName() {
+    return columnName;
+  }
+
+  public ComparerPlan getExpr() {
+    return expr;
+  }
 }
