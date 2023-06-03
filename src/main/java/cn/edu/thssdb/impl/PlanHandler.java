@@ -150,14 +150,6 @@ public class PlanHandler {
             } else {
               while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                for (Entry entry : row.getEntries()) {
-                  System.out.println(
-                      entry.value
-                          + " "
-                          + entry.equals(new Entry(1))
-                          + " "
-                          + (entry == new Entry(1)));
-                }
                 if (whereCond.ConditionVerify(row, columnNames)) {
                   row2Update.add(row);
                 }
@@ -181,15 +173,9 @@ public class PlanHandler {
                 }
               }
               Entry primaryE = entries.get(currentTable.getPrimaryIndex());
-              System.out.println(row);
-              System.out.println(newRow);
-              System.out.println(columnNames);
-              System.out.println(columnName + " " + index);
               currentTable.update(primaryE, newRow, columnNames);
             }
             System.out.println("UPDATE");
-            System.out.println(row2Update);
-            System.out.println(currentTable.printTable());
             return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
           }
         } catch (Exception e) {

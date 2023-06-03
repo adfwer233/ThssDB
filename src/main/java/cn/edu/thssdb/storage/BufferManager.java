@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class BufferManager {
-  public static final Integer BufferSize = 150;
+  public static final Integer BufferSize = 20;
 
   private String tableName;
   private String tableDir;
@@ -59,17 +59,22 @@ public class BufferManager {
   }
 
   private void dropPage() {
+    boolean found = false;
     for (int i = 0; i < buffer.size(); i++) {
       if (!writeFlag.get(i)) {
         writeIO(bufferPageIndex.get(i), buffer.get(i));
         buffer.remove(i);
         bufferPageIndex.remove(i);
         writeFlag.remove(i);
+        found = true;
+        break;
       }
     }
 
+    if (!found)
+      System.out.println("No page to drop");
     /*
-     if all pages are dirty pages, no page will be drop
+     if all pages are dirty pages, no page will be dropped
      if a transaction write too many pages, the memory of buffer will be very large......
     */
 
@@ -137,15 +142,14 @@ public class BufferManager {
      * If buffer is not full
      * add the page to buffer
      * */
-    if (buffer.size() <= BufferSize) {
-      buffer.add(data);
-      bufferPageIndex.add(pageIndex);
-      writeFlag.add(false);
-      return;
-    }
+    buffer.add(data);
+    bufferPageIndex.add(pageIndex);
+    writeFlag.add(false);
 
     // buffer full
-    dropPage();
+    if (buffer.size() > BufferSize) {
+      dropPage();
+    }
   }
 
   public ArrayList<Row> readPage(Integer pageIndex) {
