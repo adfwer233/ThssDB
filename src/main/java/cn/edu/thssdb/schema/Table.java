@@ -210,6 +210,16 @@ public class Table implements Iterable<Row> {
     updateFlag = true;
   }
 
+  public void updateByPrimaryKey(Entry key, String columnName, Entry entry) {
+    BPlusTreeLeafNode<Entry, Record> leafNode = index.getLeafNode(key);
+    Integer columnIndex = Column2Index(columnName);
+    try {
+      leafNode.update(key, columnIndex, entry);
+    } catch (KeyNotExistException e) {
+      e.printStackTrace();
+    }
+  }
+
   public ArrayList<Row> getRowsByPrimaryKey(Entry key) {
     ArrayList<Row> rows = new ArrayList<>();
     try {

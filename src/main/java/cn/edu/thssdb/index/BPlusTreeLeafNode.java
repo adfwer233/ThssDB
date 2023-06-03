@@ -2,6 +2,7 @@ package cn.edu.thssdb.index;
 
 import cn.edu.thssdb.exception.DuplicateKeyException;
 import cn.edu.thssdb.exception.KeyNotExistException;
+import cn.edu.thssdb.schema.Entry;
 import cn.edu.thssdb.schema.Record;
 import cn.edu.thssdb.schema.Row;
 import cn.edu.thssdb.storage.BufferManager;
@@ -95,6 +96,16 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     bufferManager.writePage(pageIndex, page);
   }
 
+  public void update(K key, Integer columnIndex, Entry entry) {
+    int index = binarySearch(key);
+    if (index >= 0) {
+      ArrayList<Row> page = bufferManager.readPage(pageIndex);
+      Row row = page.get(index);
+      row.getEntries().set(columnIndex, entry);
+      page.set(index, row);
+      bufferManager.writePage(pageIndex, page);
+    } else throw new KeyNotExistException();
+  }
   @Override
   K getFirstLeafKey() {
     return keys.get(0);
