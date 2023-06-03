@@ -104,7 +104,8 @@ public class IServiceHandler implements IService.Iface {
                 LogicalPlan.LogicalPlanType.CREATE_TABLE,
                 LogicalPlan.LogicalPlanType.DROP_TABLE,
                 LogicalPlan.LogicalPlanType.INSERT,
-                LogicalPlan.LogicalPlanType.DELETE));
+                LogicalPlan.LogicalPlanType.DELETE,
+                LogicalPlan.LogicalPlanType.UPDATE));
 
     /*/
     only log in transaction environment, autocommit needs no log

@@ -27,6 +27,7 @@ public abstract class LogicalPlan {
     QUIT,
     COMPARER,
     CONDITION,
-    MULTIPLE_CONDITION
+    MULTIPLE_CONDITION,
+    UPDATE
   }
 }

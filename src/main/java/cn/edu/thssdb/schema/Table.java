@@ -5,6 +5,8 @@ import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.index.BPlusTreeLeafNode;
 import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
+import cn.edu.thssdb.index.BPlusTreeIterator;
+import cn.edu.thssdb.utils.Cell;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
@@ -90,6 +92,10 @@ public class Table implements Iterable<Row> {
 
   public ArrayList<Column> getColumns() {
     return columns;
+  }
+
+  public int getPrimaryIndex() {
+    return primaryIndex;
   }
 
   public String getTableInfo() {
@@ -238,8 +244,17 @@ public class Table implements Iterable<Row> {
     updateFlag = true;
   }
 
-  public void update() {
-    // TODO
+  public void update(Entry entry, Row newRow) {
+    this.index.remove(entry);
+    this.index.put(newRow.getEntries().get(this.primaryIndex), newRow);
+  }
+
+  public int Column2Index(String columnName) {
+    ArrayList<String> columnNames = new ArrayList<>();
+    for (Column column:this.columns) {
+      columnNames.add(column.getName());
+    }
+    return columnName.indexOf(columnName);
   }
 
   private void serialize() {
