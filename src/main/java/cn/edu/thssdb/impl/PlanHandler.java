@@ -134,38 +134,8 @@ public class PlanHandler {
         DeletePlan deletePlan = (DeletePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, false, true)) {
-          Database currentDataBase = currentDatabaseHandler.getDatabase();
-          if (currentDataBase == null) throw new NoCurrentDatabaseException();
-          try (Table.TableHandler tableHandler =
-              currentDataBase.getTableForSession(
-                  currentSessionId, deletePlan.getTableName(), false, true)) {
-            Table currentTable = tableHandler.getTable();
-            ArrayList<String> columnNames = new ArrayList<>();
-            ArrayList<Column> columns = currentTable.getColumns();
-            for (Column c : columns) {
-              columnNames.add(c.getName());
-            }
-            MultipleConditionPlan whereCond = ((DeletePlan) plan).getWhereCond();
-            if (whereCond == null) {
-              throw new DeleteWithoutWhereException();
-            } else {
-              for (Row row : currentTable) {
-                if (whereCond.ConditionVerify(row, columnNames)) {
-                  currentDataBase.DeleteRow(row, currentTable.tableName);
-
-                  /*
-                   * Undo Format
-                   * DELETE <TABLE_NAME> <ROW CONTENT>
-                   * */
-                  if (Global.ENABLE_ROLLBACK) {
-                    currentDataBase.undoLogger.writeLog(
-                        String.format("DELETE %s %s", deletePlan.getTableName(), row.toString()));
-                  }
-                }
-              }
-            }
-            return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
-          }
+            DeleteImpl.handleDeletePlan(deletePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+            return new ExecuteStatementResp(StatusUtil.success("Delete success"), false);
         } catch (NoCurrentDatabaseException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (DeleteWithoutWhereException e) {

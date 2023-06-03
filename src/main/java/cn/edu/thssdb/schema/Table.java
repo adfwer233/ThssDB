@@ -210,6 +210,10 @@ public class Table implements Iterable<Row> {
     updateFlag = true;
   }
 
+  public void removePrimaryKey(Entry key) {
+    index.remove(key);
+  }
+
   public void updateByPrimaryKey(Entry key, String columnName, Entry entry) {
     BPlusTreeLeafNode<Entry, Record> leafNode = index.getLeafNode(key);
     Integer columnIndex = Column2Index(columnName);
