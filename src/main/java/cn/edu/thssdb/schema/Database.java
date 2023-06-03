@@ -140,6 +140,10 @@ public class Database {
     return null;
   }
 
+  public void UpdateTable(Entry entry, Row row, String TableName) {
+    this.tables.get(TableName).update(entry, row);
+  }
+
   public void recover() {
     File tableFolder = new File(this.getDatabaseTableFolderPath());
     File[] files = tableFolder.listFiles();

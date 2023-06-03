@@ -155,6 +155,27 @@ public class ThssDBSQLVisitor extends SQLBaseVisitor<LogicalPlan> {
   }
 
   @Override
+  public LogicalPlan visitUpdateStmt(SQLParser.UpdateStmtContext ctx) {
+    // get tableName
+    String tableName = ctx.tableName().getText();
+    String columnName = ctx.columnName().getText();
+
+    if (ctx.K_WHERE() == null) {
+      System.out.println("Exception: Insert without where");
+    }
+
+    // Condition list
+    MultipleConditionPlan whereCond = null;
+    if (ctx.multipleCondition() != null) {
+      whereCond = visitMultipleCondition(ctx.multipleCondition());
+    }
+
+    ComparerPlan expr = visitExpression(ctx.expression());
+
+    return new UpdatePlan(tableName, whereCond, columnName, expr);
+  }
+
+  @Override
   public ComparerPlan visitComparer(SQLParser.ComparerContext ctx) {
     if (ctx.columnFullName() != null) {
       String tableName = null;

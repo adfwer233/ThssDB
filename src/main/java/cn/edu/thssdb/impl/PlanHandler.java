@@ -5,6 +5,7 @@ import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.plan.LogicalPlan;
+import cn.edu.thssdb.plan.condition.ComparerPlan;
 import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.query.QueryTable;
@@ -14,6 +15,7 @@ import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.StatusUtil;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -115,6 +117,65 @@ public class PlanHandler {
           InsertImpl.handleInsertPlan(
               insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
+        } catch (Exception e) {
+          return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
+        }
+      case UPDATE:
+        System.out.println("UPDATE");
+        UpdatePlan updatePlan = (UpdatePlan) plan;
+        try (Database.DatabaseHandler currentDatabaseHandler = manager.getCurrentDatabase(currentSessionId, false, true)) {
+          Database currentDataBase = currentDatabaseHandler.getDatabase();
+          if (currentDataBase == null) throw new NoCurrentDatabaseException();
+          try (Table.TableHandler tableHandler = currentDataBase.getTableForSession(currentSessionId, updatePlan.getTableName(), false, true)) {
+            Table currentTable = tableHandler.getTable();
+
+            //获取columnNames
+            ArrayList<String> columnNames = new ArrayList<>();
+            ArrayList<Column> columns = currentTable.getColumns();
+            for (Column c : columns) {
+              columnNames.add(c.getName());
+            }
+
+            MultipleConditionPlan whereCond = ((UpdatePlan) plan).getWhereCond();
+
+            ArrayList<Row> row2Update = new ArrayList<>();
+            Iterator<Row> rowIterator = currentTable.iterator();
+            if (whereCond == null) {
+              while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                row2Update.add(row);
+              }
+            } else {
+              while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (whereCond.ConditionVerify(row, columnNames)) {
+                  row2Update.add(row);
+                }
+              }
+            }
+
+            // Update
+            String columeName = updatePlan.getColumnName();
+            int index = currentTable.Column2Index(columeName);
+            ComparerPlan expr = updatePlan.getExpr();
+            Entry newEntry = new Entry((Comparable) expr.getValue());
+
+            for (Row row : row2Update) {
+              Row newRow = new Row();
+              ArrayList<Entry> entries = row.getEntries();
+              for (int i = 0; i < entries.size(); i++) {
+                if (i == index) {
+                  newRow.getEntries().add(newEntry);
+                } else {
+                  newRow.getEntries().add(entries.get(i));
+                }
+              }
+              Entry primaryE = entries.get(currentTable.getPrimaryIndex());
+
+              currentDataBase.UpdateTable(primaryE, newRow, currentTable.tableName);
+            }
+            return new ExecuteStatementResp(StatusUtil.success(currentTable.tableName), false);
+          }
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }

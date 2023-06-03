@@ -3,6 +3,7 @@ package cn.edu.thssdb.schema;
 import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.index.BPlusTree;
 import cn.edu.thssdb.index.BPlusTreeIterator;
+import cn.edu.thssdb.utils.Cell;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
 
@@ -87,6 +88,10 @@ public class Table implements Iterable<Row> {
     return columns;
   }
 
+  public int getPrimaryIndex() {
+    return primaryIndex;
+  }
+
   public String getTableInfo() {
     String res = String.format("Table name: %s \n", tableName);
     for (Column column : columns) {
@@ -134,8 +139,17 @@ public class Table implements Iterable<Row> {
     this.index.remove(row.getEntries().get(this.primaryIndex));
   }
 
-  public void update() {
-    // TODO
+  public void update(Entry entry, Row newRow) {
+    this.index.remove(entry);
+    this.index.put(newRow.getEntries().get(this.primaryIndex), newRow);
+  }
+
+  public int Column2Index(String columnName) {
+    ArrayList<String> columnNames = new ArrayList<>();
+    for (Column column:this.columns) {
+      columnNames.add(column.getName());
+    }
+    return columnName.indexOf(columnName);
   }
 
   private void serialize() {
