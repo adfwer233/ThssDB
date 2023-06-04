@@ -40,6 +40,15 @@ public class QueryTable implements Iterator<Row> {
     this.rows.addAll(rows);
   }
 
+  public QueryTable(Table table1, ArrayList<Row> rows) {
+    this.rows = new ArrayList<>();
+    this.columns = new ArrayList<>();
+    for (Column col : table1.getColumns()) {
+      columns.add(new Column(col.getName()));
+    }
+    this.rows.addAll(rows);
+  }
+
   @Override
   public boolean hasNext() {
     return rows.iterator().hasNext();

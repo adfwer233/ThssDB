@@ -238,6 +238,10 @@ public class Database {
     }
   }
 
+  public Table getTableWithoutLock(String tableName) {
+    return tables.get(tableName);
+  }
+
   Table.TableHandler getTable(
       String tableName,
       Boolean read,

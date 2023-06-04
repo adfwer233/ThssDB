@@ -6,12 +6,45 @@ import cn.edu.thssdb.plan.impl.SelectPlan;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.type.ComparerType;
+import javafx.scene.control.Tab;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class SelectImpl {
+
+  private static Boolean isWhereConditionPrimary(Table table, MultipleConditionPlan cond) {
+    if (!cond.hasChild()) {
+      SingleConditionPlan singleConditionPlan = cond.singleConditionPlan;
+      String columnName2 = singleConditionPlan.expr1.columnName;
+      return table.Column2Index(columnName2) == table.primaryIndex;
+    }
+    return false;
+  }
+
+  private static Boolean isPrimarySelect(SelectPlan plan, Database db, Long sessionId) {
+    MultipleConditionPlan cond = plan.getWhereConditionPlan();
+    if (cond != null && !cond.hasChild()) {
+      SingleConditionPlan singleConditionPlan = cond.singleConditionPlan;
+
+      if (!Objects.equals(singleConditionPlan.comparator, "="))
+        return false;
+
+      String tableName  = plan.getTableNameList().get(0);
+      String columnName = singleConditionPlan.expr1.columnName;
+      Table table = db.getTableWithoutLock(tableName);
+      if (table.Column2Index(columnName) == table.primaryIndex) {
+        return true;
+//          Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
+//          ArrayList<Row> res = table.getRowsByPrimaryKey(key);
+//          System.out.println("[Primary select] " + res.size());
+//          targetTable = new QueryTable(table, res);
+      }
+    }
+    return false;
+  }
 
   private static Boolean allPrimaryKeyJoin(SelectPlan plan, Database db, Long sessionId) {
     List<String> targetTableList = plan.getTableNameList();
@@ -60,11 +93,34 @@ public class SelectImpl {
     // build the target query table
 
     List<String> targetTableList = plan.getTableNameList();
-    QueryTable targetTable;
+    QueryTable targetTable = null;
     MultipleConditionPlan onConditionPlan = plan.getOnConditionPlan();
     ArrayList<String> columnNames = new ArrayList<>();
 
-    if (allPrimaryKeyJoin(plan, db, sessionId)) {
+    // TODO: check "="
+
+    // special case: no join, select primary key
+    if (targetTableList.size() == 1 && isPrimarySelect(plan, db, sessionId)) {
+      MultipleConditionPlan cond = plan.getWhereConditionPlan();
+      if (!cond.hasChild()) {
+        SingleConditionPlan singleConditionPlan = cond.singleConditionPlan;
+        String tableName  = plan.getTableNameList().get(0);
+        String columnName = singleConditionPlan.expr1.columnName;
+        try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, tableName, true, false)) {
+          Table table = tableHandler.getTable();
+          if (table.Column2Index(columnName) == table.primaryIndex) {
+            Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
+            ArrayList<Row> res = table.getRowsByPrimaryKey(key);
+            System.out.println("[Primary select] " + res.size());
+            targetTable = new QueryTable(table, res);
+
+            for (Column column : targetTable.columns) {
+              columnNames.add(column.getName());
+            }
+          }
+        }
+      }
+    } else if (allPrimaryKeyJoin(plan, db, sessionId)) {
 
       SingleConditionPlan singleConditionPlan = onConditionPlan.singleConditionPlan;
       String tableName1 = singleConditionPlan.expr1.tableName;
@@ -76,11 +132,21 @@ public class SelectImpl {
             db.getTableForSession(sessionId, tableName2, true, false)) {
           Table table1 = tableHandler1.getTable();
           Table table2 = tableHandler2.getTable();
-          for (Row row : table1) {
-            Entry attr1 = row.getEntries().get(table1.primaryIndex);
-            //            System.out.println(attr1);
-            ArrayList<Row> findRows = table2.getRowsByPrimaryKey(attr1);
-            res.addAll(findRows);
+
+          // if where condition is also primary key
+          if (isWhereConditionPrimary(table2, plan.getWhereConditionPlan())) {
+            SingleConditionPlan singleConditionPlan1 = plan.getWhereConditionPlan().singleConditionPlan;
+            Entry key = new Entry((Comparable) singleConditionPlan1.expr2.getValue());
+            for (Row row: table1.getRowsByPrimaryKey(key)) {
+              res.addAll(table2.getRowsByPrimaryKey(key));
+            }
+          } else {
+            for (Row row : table1) {
+              Entry attr1 = row.getEntries().get(table1.primaryIndex);
+              //            System.out.println(attr1);
+              ArrayList<Row> findRows = table2.getRowsByPrimaryKey(attr1);
+              res.addAll(findRows);
+            }
           }
           System.out.println("[PRIMARY JOIN] " + res.size());
           targetTable = new QueryTable(table1, table2, res);
@@ -124,6 +190,9 @@ public class SelectImpl {
         targetTable.rows.removeAll(rowToDelete);
       }
     }
+
+    System.out.println(targetTable.toString());
+
     // where condition
     MultipleConditionPlan whereConditionPlan = plan.getWhereConditionPlan();
     if (whereConditionPlan != null) {
