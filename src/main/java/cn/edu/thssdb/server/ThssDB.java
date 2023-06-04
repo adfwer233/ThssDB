@@ -31,6 +31,12 @@ public class ThssDB {
   }
 
   public static void main(String[] args) {
+
+    // close the system.out
+    //    System.setOut(new PrintStream(new OutputStream() {
+    //      @Override public void write(int b) throws IOException {}
+    //    }));
+
     ThssDB server = ThssDB.getInstance();
     server.start();
   }

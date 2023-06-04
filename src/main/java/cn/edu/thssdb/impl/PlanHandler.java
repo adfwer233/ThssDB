@@ -5,17 +5,12 @@ import cn.edu.thssdb.exception.KeyNotExistException;
 import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.exception.TableNotExistException;
 import cn.edu.thssdb.plan.LogicalPlan;
-import cn.edu.thssdb.plan.condition.ComparerPlan;
-import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.impl.*;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.rpc.thrift.ExecuteStatementResp;
 import cn.edu.thssdb.schema.*;
-import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.StatusUtil;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,7 +119,8 @@ public class PlanHandler {
         UpdatePlan updatePlan = (UpdatePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, true, false)) {
-          UpdateImpl.handleUpdatePlan(updatePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+          UpdateImpl.handleUpdatePlan(
+              updatePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Update success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -134,8 +130,9 @@ public class PlanHandler {
         DeletePlan deletePlan = (DeletePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, false, true)) {
-            DeleteImpl.handleDeletePlan(deletePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
-            return new ExecuteStatementResp(StatusUtil.success("Delete success"), false);
+          DeleteImpl.handleDeletePlan(
+              deletePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
+          return new ExecuteStatementResp(StatusUtil.success("Delete success"), false);
         } catch (NoCurrentDatabaseException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         } catch (DeleteWithoutWhereException e) {

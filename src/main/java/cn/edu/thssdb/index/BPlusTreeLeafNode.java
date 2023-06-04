@@ -67,7 +67,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
     int index = binarySearch(key);
     int valueIndex = index >= 0 ? index : -index - 1;
-    System.out.println(String.format("[B PLUS LEAF] SIZE %d %d index %d", nodeSize, page.size(), pageIndex));
+    System.out.println(
+        String.format("[B PLUS LEAF] SIZE %d %d index %d", nodeSize, page.size(), pageIndex));
     if (index >= 0) {
       System.out.println(keys.get(index));
       System.out.println(key);
@@ -106,6 +107,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
       bufferManager.writePage(pageIndex, page);
     } else throw new KeyNotExistException();
   }
+
   @Override
   K getFirstLeafKey() {
     return keys.get(0);

@@ -4,7 +4,6 @@ import cn.edu.thssdb.exception.NoCurrentDatabaseException;
 import cn.edu.thssdb.plan.condition.ComparerPlan;
 import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 import cn.edu.thssdb.plan.condition.SingleConditionPlan;
-import cn.edu.thssdb.plan.impl.InsertPlan;
 import cn.edu.thssdb.plan.impl.UpdatePlan;
 import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.type.ComparerType;
@@ -14,24 +13,30 @@ import java.util.Iterator;
 
 public class UpdateImpl {
 
-  public static void handleUpdatePlan(UpdatePlan updatePlan, Database currentDB, Long currentSessionId) throws NoCurrentDatabaseException {
+  public static void handleUpdatePlan(
+      UpdatePlan updatePlan, Database currentDB, Long currentSessionId)
+      throws NoCurrentDatabaseException {
 
     Database currentDataBase = currentDB;
 
     if (currentDataBase == null) throw new NoCurrentDatabaseException();
     try (Table.TableHandler tableHandler =
-                 currentDataBase.getTableForSession(
-                         currentSessionId, updatePlan.getTableName(), false, true)) {
+        currentDataBase.getTableForSession(
+            currentSessionId, updatePlan.getTableName(), false, true)) {
 
       Table currentTable = tableHandler.getTable();
 
       // handle the special case: where attr is primary key
       if (!updatePlan.getWhereCond().hasChild) {
         SingleConditionPlan singleConditionPlan = updatePlan.getWhereCond().singleConditionPlan;
-        if (singleConditionPlan.expr1.type == ComparerType.COLUMN && singleConditionPlan.expr2.type != ComparerType.COLUMN) {
+        if (singleConditionPlan.expr1.type == ComparerType.COLUMN
+            && singleConditionPlan.expr2.type != ComparerType.COLUMN) {
           String attrName = singleConditionPlan.expr1.columnName;
           if (currentTable.Column2Index(attrName) == currentTable.primaryIndex) {
-            currentTable.updateByPrimaryKey(new Entry((Comparable) singleConditionPlan.expr2.getValue()), updatePlan.getColumnName(), new Entry((Comparable) updatePlan.getExpr().getValue()));
+            currentTable.updateByPrimaryKey(
+                new Entry((Comparable) singleConditionPlan.expr2.getValue()),
+                updatePlan.getColumnName(),
+                new Entry((Comparable) updatePlan.getExpr().getValue()));
             return;
           }
         }

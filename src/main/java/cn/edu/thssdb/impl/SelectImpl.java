@@ -6,7 +6,6 @@ import cn.edu.thssdb.plan.impl.SelectPlan;
 import cn.edu.thssdb.query.QueryTable;
 import cn.edu.thssdb.schema.*;
 import cn.edu.thssdb.type.ComparerType;
-import javafx.scene.control.Tab;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,18 +28,17 @@ public class SelectImpl {
     if (cond != null && !cond.hasChild()) {
       SingleConditionPlan singleConditionPlan = cond.singleConditionPlan;
 
-      if (!Objects.equals(singleConditionPlan.comparator, "="))
-        return false;
+      if (!Objects.equals(singleConditionPlan.comparator, "=")) return false;
 
-      String tableName  = plan.getTableNameList().get(0);
+      String tableName = plan.getTableNameList().get(0);
       String columnName = singleConditionPlan.expr1.columnName;
       Table table = db.getTableWithoutLock(tableName);
       if (table.Column2Index(columnName) == table.primaryIndex) {
         return true;
-//          Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
-//          ArrayList<Row> res = table.getRowsByPrimaryKey(key);
-//          System.out.println("[Primary select] " + res.size());
-//          targetTable = new QueryTable(table, res);
+        //          Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
+        //          ArrayList<Row> res = table.getRowsByPrimaryKey(key);
+        //          System.out.println("[Primary select] " + res.size());
+        //          targetTable = new QueryTable(table, res);
       }
     }
     return false;
@@ -104,9 +102,10 @@ public class SelectImpl {
       MultipleConditionPlan cond = plan.getWhereConditionPlan();
       if (!cond.hasChild()) {
         SingleConditionPlan singleConditionPlan = cond.singleConditionPlan;
-        String tableName  = plan.getTableNameList().get(0);
+        String tableName = plan.getTableNameList().get(0);
         String columnName = singleConditionPlan.expr1.columnName;
-        try (Table.TableHandler tableHandler = db.getTableForSession(sessionId, tableName, true, false)) {
+        try (Table.TableHandler tableHandler =
+            db.getTableForSession(sessionId, tableName, true, false)) {
           Table table = tableHandler.getTable();
           if (table.Column2Index(columnName) == table.primaryIndex) {
             Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
@@ -135,9 +134,10 @@ public class SelectImpl {
 
           // if where condition is also primary key
           if (isWhereConditionPrimary(table2, plan.getWhereConditionPlan())) {
-            SingleConditionPlan singleConditionPlan1 = plan.getWhereConditionPlan().singleConditionPlan;
+            SingleConditionPlan singleConditionPlan1 =
+                plan.getWhereConditionPlan().singleConditionPlan;
             Entry key = new Entry((Comparable) singleConditionPlan1.expr2.getValue());
-            for (Row row: table1.getRowsByPrimaryKey(key)) {
+            for (Row row : table1.getRowsByPrimaryKey(key)) {
               res.addAll(table2.getRowsByPrimaryKey(key));
             }
           } else {

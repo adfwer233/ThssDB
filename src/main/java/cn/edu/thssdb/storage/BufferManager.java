@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class BufferManager {
-  public static final Integer BufferSize = 20;
+  public static final Integer BufferSize = 100;
 
   private String tableName;
   private String tableDir;
@@ -71,8 +71,7 @@ public class BufferManager {
       }
     }
 
-    if (!found)
-      System.out.println("No page to drop");
+    if (!found) System.out.println("No page to drop");
     /*
      if all pages are dirty pages, no page will be dropped
      if a transaction write too many pages, the memory of buffer will be very large......
