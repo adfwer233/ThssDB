@@ -5,8 +5,8 @@ import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 
 public class DeletePlan extends LogicalPlan {
 
-  private String tableName;
-  private MultipleConditionPlan whereCond;
+  private final String tableName;
+  private final MultipleConditionPlan whereCond;
 
   public DeletePlan(String tableName, MultipleConditionPlan whereCond) {
     super(LogicalPlanType.DELETE);

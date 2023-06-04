@@ -10,8 +10,8 @@ import java.util.ArrayList;
 public class BufferManager {
   public static final Integer BufferSize = 100;
 
-  private String tableName;
-  private String tableDir;
+  private final String tableName;
+  private final String tableDir;
 
   ArrayList<ArrayList<Row>> buffer = new ArrayList<>();
   ArrayList<Integer> bufferPageIndex = new ArrayList<>();
@@ -24,8 +24,7 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    System.out.println(
-        String.format("[Page IO WRITE] [BUFFER SIZE %d] %s", buffer.size(), tableName));
+    System.out.printf("[Page IO WRITE] [BUFFER SIZE %d] %s%n", buffer.size(), tableName);
     System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
@@ -97,8 +96,7 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
-      System.out.println(
-          String.format("[Page IO Read] [BUFFER SIZE %d] %s", buffer.size(), pagePath));
+      System.out.printf("[Page IO Read] [BUFFER SIZE %d] %s%n", buffer.size(), pagePath);
       System.out.flush();
       FileInputStream fileInputStream = new FileInputStream(pagePath);
 

@@ -4,7 +4,7 @@ import cn.edu.thssdb.plan.LogicalPlan;
 
 public class UseDatabasePlan extends LogicalPlan {
 
-  private String databaseName;
+  private final String databaseName;
 
   public UseDatabasePlan(String databaseName) {
     super(LogicalPlanType.USE_DB);

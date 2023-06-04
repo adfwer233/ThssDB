@@ -7,10 +7,10 @@ import java.util.List;
 
 public class SelectPlan extends LogicalPlan {
 
-  private List<String> attributeList;
-  private List<String> tableNameList;
-  private MultipleConditionPlan onConditionPlan;
-  private MultipleConditionPlan whereConditionPlan;
+  private final List<String> attributeList;
+  private final List<String> tableNameList;
+  private final MultipleConditionPlan onConditionPlan;
+  private final MultipleConditionPlan whereConditionPlan;
 
   public SelectPlan(
       List<String> attributeList,

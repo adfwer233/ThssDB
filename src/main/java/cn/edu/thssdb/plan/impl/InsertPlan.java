@@ -5,9 +5,9 @@ import cn.edu.thssdb.plan.LogicalPlan;
 import java.util.List;
 
 public class InsertPlan extends LogicalPlan {
-  private String tableName;
-  private List<String> attributeNameList;
-  private List<List<String>> entryValueList;
+  private final String tableName;
+  private final List<String> attributeNameList;
+  private final List<List<String>> entryValueList;
 
   public InsertPlan(
       String tableName, List<String> attributeNameList, List<List<String>> entryValueList) {

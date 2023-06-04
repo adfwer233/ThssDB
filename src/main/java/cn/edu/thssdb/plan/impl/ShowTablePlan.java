@@ -3,7 +3,7 @@ package cn.edu.thssdb.plan.impl;
 import cn.edu.thssdb.plan.LogicalPlan;
 
 public class ShowTablePlan extends LogicalPlan {
-  private String tableName;
+  private final String tableName;
 
   public String getTableName() {
     return tableName;

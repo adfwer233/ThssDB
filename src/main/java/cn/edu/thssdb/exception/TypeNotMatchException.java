@@ -3,8 +3,8 @@ package cn.edu.thssdb.exception;
 import cn.edu.thssdb.type.ComparerType;
 
 public class TypeNotMatchException extends RuntimeException {
-  private ComparerType type1;
-  private ComparerType type2;
+  private final ComparerType type1;
+  private final ComparerType type2;
 
   public TypeNotMatchException(ComparerType type1, ComparerType type2) {
     super();

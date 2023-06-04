@@ -1,7 +1,7 @@
 package cn.edu.thssdb.exception.InsertException;
 
 public class AttributeNameNotExistException extends Exception {
-  private String attrName;
+  private final String attrName;
 
   public AttributeNameNotExistException(String attrName) {
     super();

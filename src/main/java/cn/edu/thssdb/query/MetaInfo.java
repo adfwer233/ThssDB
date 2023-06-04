@@ -7,8 +7,8 @@ import java.util.List;
 
 class MetaInfo {
 
-  private String tableName;
-  private List<Column> columns;
+  private final String tableName;
+  private final List<Column> columns;
 
   MetaInfo(String tableName, ArrayList<Column> columns) {
     this.tableName = tableName;

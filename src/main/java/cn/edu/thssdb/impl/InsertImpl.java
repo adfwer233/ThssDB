@@ -82,15 +82,14 @@ public class InsertImpl {
             case STRING:
               entryString = entryString.substring(1, entryString.length() - 1);
               if (entryString.length() > maxLength) {
-                System.out.println(
-                    String.format(
-                        "Too long %d %d %s", entryString.length(), maxLength, entryString));
+                System.out.printf(
+                    "Too long %d %d %s%n", entryString.length(), maxLength, entryString);
                 throw new StringEntryTooLongException();
               }
               entry = new Entry(entryString);
               break;
             default:
-              System.out.println("type error" + type.toString());
+              System.out.println("type error" + type);
           }
 
           entries.add(entry);
@@ -102,7 +101,7 @@ public class InsertImpl {
          * */
         if (Global.ENABLE_ROLLBACK) {
           currentDB.undoLogger.writeLog(
-              String.format("INSERT %s %s", plan.getTableName(), (new Row(entries)).toString()));
+              String.format("INSERT %s %s", plan.getTableName(), (new Row(entries))));
         }
 
         ArrayList<String> tmp = new ArrayList<>(attrNameList);

@@ -13,8 +13,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Database {
 
-  private String name;
-  private HashMap<String, Table> tables;
+  private final String name;
+  private final HashMap<String, Table> tables;
   ReentrantReadWriteLock lock;
 
   public HashMap<Long, TransactionLockManager> transactionLockManagers = new HashMap<>();
@@ -23,7 +23,7 @@ public class Database {
   public Logger undoLogger;
 
   public class DatabaseHandler implements AutoCloseable {
-    private Database database;
+    private final Database database;
     public Boolean hasReadLock;
     public Boolean hasWriteLock;
 

@@ -3,7 +3,7 @@ package cn.edu.thssdb.plan.impl;
 import cn.edu.thssdb.plan.LogicalPlan;
 
 public class DropTablePlan extends LogicalPlan {
-  private String tableName;
+  private final String tableName;
 
   public DropTablePlan(String tableName) {
     super(LogicalPlan.LogicalPlanType.DROP_TABLE);

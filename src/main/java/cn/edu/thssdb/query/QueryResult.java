@@ -10,8 +10,8 @@ import java.util.List;
 public class QueryResult {
 
   private List<MetaInfo> metaInfoInfos;
-  private List<Integer> index;
-  private List<Cell> attrs;
+  private final List<Integer> index;
+  private final List<Cell> attrs;
 
   public QueryResult(QueryTable[] queryTables) {
     // TODO

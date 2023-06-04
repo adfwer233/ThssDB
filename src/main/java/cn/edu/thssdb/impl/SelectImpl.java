@@ -33,13 +33,11 @@ public class SelectImpl {
       String tableName = plan.getTableNameList().get(0);
       String columnName = singleConditionPlan.expr1.columnName;
       Table table = db.getTableWithoutLock(tableName);
-      if (table.Column2Index(columnName) == table.primaryIndex) {
-        return true;
-        //          Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
-        //          ArrayList<Row> res = table.getRowsByPrimaryKey(key);
-        //          System.out.println("[Primary select] " + res.size());
-        //          targetTable = new QueryTable(table, res);
-      }
+      //          Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
+      //          ArrayList<Row> res = table.getRowsByPrimaryKey(key);
+      //          System.out.println("[Primary select] " + res.size());
+      //          targetTable = new QueryTable(table, res);
+      return table.Column2Index(columnName) == table.primaryIndex;
     }
     return false;
   }

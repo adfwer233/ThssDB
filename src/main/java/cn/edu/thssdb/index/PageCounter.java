@@ -11,7 +11,10 @@ public class PageCounter implements Serializable {
     return indexList.get(indexList.size() - 1);
   }
 
+  public boolean updated = false;
+
   public int allocNewIndex() {
+    updated = true;
     if (indexList.isEmpty()) {
       indexList.add(1);
       return 1;
@@ -30,6 +33,6 @@ public class PageCounter implements Serializable {
   }
 
   public void removeIndex(int index) {
-    indexList.remove(indexList.indexOf(index));
+    indexList.remove((Integer) index);
   }
 }

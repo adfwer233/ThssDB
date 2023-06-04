@@ -14,10 +14,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Table implements Iterable<Row> {
   ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-  private String databaseName;
+  private final String databaseName;
   public String tableName;
   public ArrayList<Column> columns;
-  private BPlusTree<Entry, Record> index;
+  private final BPlusTree<Entry, Record> index;
   public int primaryIndex = 0;
 
   private Boolean updateFlag = false;
@@ -25,7 +25,7 @@ public class Table implements Iterable<Row> {
   // table handler to manage the lock of table
   public class TableHandler implements AutoCloseable {
 
-    private Table table;
+    private final Table table;
     public Boolean hasReadLock;
     public Boolean hasWriteLock;
 
@@ -68,7 +68,7 @@ public class Table implements Iterable<Row> {
       // or abort).
       if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
         if (this.hasReadLock) {
-          System.out.println(String.format("[READ LOCK RELEASED %s]", table.tableName));
+          System.out.printf("[READ LOCK RELEASED %s]%n", table.tableName);
           this.table.lock.readLock().unlock();
           this.hasReadLock = false;
         }
@@ -169,15 +169,20 @@ public class Table implements Iterable<Row> {
 
           System.out.println("[IO INDEX] " + tableFile);
 
-          FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
-          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-          ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+          if (index.pageCounter.updated) {
 
-          objectOutputStream.writeObject(index.pageCounter);
+            index.pageCounter.updated = false;
 
-          objectOutputStream.close();
-          bufferedOutputStream.flush();
-          bufferedOutputStream.close();
+            FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
+            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+
+            objectOutputStream.writeObject(index.pageCounter);
+
+            objectOutputStream.close();
+            bufferedOutputStream.flush();
+            bufferedOutputStream.close();
+          }
         } catch (Exception e) {
           System.out.println(e.getMessage());
           e.printStackTrace();
@@ -343,7 +348,7 @@ public class Table implements Iterable<Row> {
   }
 
   private class TableIterator implements Iterator<Row> {
-    private Iterator<Pair<Entry, Row>> iterator;
+    private final Iterator<Pair<Entry, Row>> iterator;
 
     TableIterator(Table table) {
       this.iterator = new RecordTreeIterator(index, table);

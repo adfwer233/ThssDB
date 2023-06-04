@@ -6,8 +6,8 @@ import cn.edu.thssdb.schema.Column;
 import java.util.List;
 
 public class CreateTablePlan extends LogicalPlan {
-  private String tableName;
-  private List<Column> columns;
+  private final String tableName;
+  private final List<Column> columns;
 
   public String getTableName() {
     return tableName;

@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TransactionLockManager {
-  private ArrayList<ReentrantReadWriteLock> readLocks = new ArrayList<>();
-  private ArrayList<ReentrantReadWriteLock> writeLocks = new ArrayList<>();
+  private final ArrayList<ReentrantReadWriteLock> readLocks = new ArrayList<>();
+  private final ArrayList<ReentrantReadWriteLock> writeLocks = new ArrayList<>();
 
   public Table.TableHandler getTableHandler(
       Database database, String tableName, Boolean read, Boolean write) {
@@ -33,19 +33,19 @@ public class TransactionLockManager {
     if (Global.isolationLevel == Global.IsolationLevel.SERIALIZABLE) {
       for (ReentrantReadWriteLock lock : readLocks) {
         try {
-          System.out.println(
-              String.format(
-                  "[Read LOCK RELEASE before]"
-                      + lock.getReadHoldCount()
-                      + " "
-                      + lock.getWriteHoldCount()));
+          System.out.printf(
+              "[Read LOCK RELEASE before]"
+                  + lock.getReadHoldCount()
+                  + " "
+                  + lock.getWriteHoldCount()
+                  + "%n");
           lock.readLock().unlock();
-          System.out.println(
-              String.format(
-                  "[Read LOCK RELEASE after]"
-                      + lock.getReadHoldCount()
-                      + " "
-                      + lock.getWriteHoldCount()));
+          System.out.printf(
+              "[Read LOCK RELEASE after]"
+                  + lock.getReadHoldCount()
+                  + " "
+                  + lock.getWriteHoldCount()
+                  + "%n");
         } catch (IllegalMonitorStateException e) {
           System.out.println(e.getMessage());
         }
@@ -54,9 +54,8 @@ public class TransactionLockManager {
 
     for (ReentrantReadWriteLock lock : writeLocks) {
       lock.writeLock().unlock();
-      System.out.println(
-          String.format(
-              "[WRITE LOCK RELEASE]" + lock.getReadLockCount() + " " + lock.getWriteHoldCount()));
+      System.out.printf(
+          "[WRITE LOCK RELEASE]" + lock.getReadLockCount() + " " + lock.getWriteHoldCount() + "%n");
     }
 
     readLocks.clear();

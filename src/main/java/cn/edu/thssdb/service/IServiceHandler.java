@@ -53,7 +53,7 @@ public class IServiceHandler implements IService.Iface {
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
 
-    System.out.println(String.format("[Statement %d] %s", req.getSessionId(), req.statement));
+    System.out.printf("[Statement %d] %s%n", req.getSessionId(), req.statement);
     System.out.flush();
     // TODO: maintain a map from session id to current database
     long currentSessionId = req.getSessionId();
@@ -61,7 +61,7 @@ public class IServiceHandler implements IService.Iface {
     Manager manager = Manager.getInstance();
 
     // begin transaction
-    if (req.statement.toLowerCase().equals("begin transaction")) {
+    if (req.statement.equalsIgnoreCase("begin transaction")) {
       if (manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session already in a Transaction"), false);
@@ -72,7 +72,7 @@ public class IServiceHandler implements IService.Iface {
     }
 
     // commit
-    if (req.statement.toLowerCase().equals("commit;")) {
+    if (req.statement.equalsIgnoreCase("commit;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session not in a Transaction now"), false);
@@ -85,7 +85,7 @@ public class IServiceHandler implements IService.Iface {
       }
     }
 
-    if (req.statement.toLowerCase().equals("rollback;")) {
+    if (req.statement.equalsIgnoreCase("rollback;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session not in a Transaction now"), false);
@@ -128,8 +128,7 @@ public class IServiceHandler implements IService.Iface {
       if (logType.contains(plan.getType())) {
         manager.persistCurrentDatabase(currentSessionId);
       }
-      System.out.println(
-          String.format("[RELEASE TABLE LOCK %d] %s", req.getSessionId(), req.statement));
+      System.out.printf("[RELEASE TABLE LOCK %d] %s%n", req.getSessionId(), req.statement);
     }
 
     return resp;

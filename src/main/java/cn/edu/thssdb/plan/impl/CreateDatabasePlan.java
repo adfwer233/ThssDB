@@ -22,7 +22,7 @@ import cn.edu.thssdb.plan.LogicalPlan;
 
 public class CreateDatabasePlan extends LogicalPlan {
 
-  private String databaseName;
+  private final String databaseName;
 
   public CreateDatabasePlan(String databaseName) {
     super(LogicalPlanType.CREATE_DB);

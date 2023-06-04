@@ -6,13 +6,13 @@ import cn.edu.thssdb.plan.condition.MultipleConditionPlan;
 
 public class UpdatePlan extends LogicalPlan {
 
-  private String tableName;
+  private final String tableName;
 
-  private String columnName;
+  private final String columnName;
 
-  private MultipleConditionPlan whereCond;
+  private final MultipleConditionPlan whereCond;
 
-  private ComparerPlan expr;
+  private final ComparerPlan expr;
 
   public UpdatePlan(
       String tableName, MultipleConditionPlan whereCond, String columnName, ComparerPlan expr) {

@@ -1,7 +1,7 @@
 package cn.edu.thssdb.exception;
 
 public class TableNotExistException extends Exception {
-  private String tableName;
+  private final String tableName;
 
   public TableNotExistException() {
     super();

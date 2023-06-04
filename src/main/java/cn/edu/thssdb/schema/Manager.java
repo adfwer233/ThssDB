@@ -13,9 +13,9 @@ import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Manager {
-  private HashMap<String, Database> databases;
+  private final HashMap<String, Database> databases;
 
-  private HashMap<Long, String> currentDatabaseName = new HashMap<>();
+  private final HashMap<Long, String> currentDatabaseName = new HashMap<>();
   public ArrayList<Long> currentSessions = new ArrayList<>();
 
   public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
@@ -43,7 +43,7 @@ public class Manager {
     return null;
   }
 
-  private static ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+  private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
   public void releaseTransactionLocks(Long sessionId) {
     for (Database database : databases.values()) {
@@ -104,7 +104,7 @@ public class Manager {
       InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
       BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 
-      Long tmpSessionId = 2894759841l;
+      Long tmpSessionId = 2894759841L;
       String line;
       while ((line = bufferedReader.readLine()) != null) {
         System.out.println("recover database name: " + line);
