@@ -21,7 +21,7 @@ public class Table implements Iterable<Row> {
   public int primaryIndex = 0;
 
   private Boolean updateFlag = false;
-
+  public Boolean updateMetaFlag = true;
   // table handler to manage the lock of table
   public class TableHandler implements AutoCloseable {
 

@@ -93,23 +93,28 @@ public class Database {
     if (!databaseFolder.exists()) databaseFolder.mkdirs();
 
     for (Table table : tables.values()) {
-      String tableDirPath = table.getTableFolderPath();
-      File tableDir = new File(tableDirPath);
-      if (!tableDir.exists()) tableDir.mkdirs();
 
-      // persist table meta
-      String filePath = table.getTableMetaPath();
-      try {
-        FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-        for (Column column : table.getColumns()) {
-          outputStreamWriter.write(column.toString() + "\n");
+      if (table.updateMetaFlag) {
+        String tableDirPath = table.getTableFolderPath();
+        File tableDir = new File(tableDirPath);
+        if (!tableDir.exists()) tableDir.mkdirs();
+
+        // persist table meta
+        String filePath = table.getTableMetaPath();
+        try {
+          FileOutputStream fileOutputStream = new FileOutputStream(filePath);
+          OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+          for (Column column : table.getColumns()) {
+            outputStreamWriter.write(column.toString() + "\n");
+          }
+          outputStreamWriter.close();
+          fileOutputStream.close();
+        } catch (Exception e) {
+          System.out.println("database persist " + e);
+          // TODO: add IO exception
         }
-        outputStreamWriter.close();
-        fileOutputStream.close();
-      } catch (Exception e) {
-        System.out.println("database persist " + e);
-        // TODO: add IO exception
+
+        table.updateMetaFlag = false;
       }
 
       // serialize table data

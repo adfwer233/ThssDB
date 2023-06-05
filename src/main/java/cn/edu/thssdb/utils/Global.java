@@ -1,7 +1,7 @@
 package cn.edu.thssdb.utils;
 
 public class Global {
-  public static int fanout = 64;
+  public static int fanout = 24;
 
   public static int SUCCESS_CODE = 0;
   public static int FAILURE_CODE = -1;
@@ -32,7 +32,7 @@ public class Global {
     SERIALIZABLE
   }
 
-  public static final IsolationLevel isolationLevel = IsolationLevel.SERIALIZABLE;
+  public static final IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
 
   public static final Boolean ENABLE_ROLLBACK = false;
 }
