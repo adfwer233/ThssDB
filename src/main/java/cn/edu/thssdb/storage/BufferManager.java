@@ -24,7 +24,7 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    System.out.printf("[Page IO WRITE] [BUFFER SIZE %d] %s%n", buffer.size(), tableName);
+    System.out.printf("[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n", buffer.size(), tableName, Runtime.getRuntime().maxMemory(), Runtime.getRuntime().totalMemory());
     System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {

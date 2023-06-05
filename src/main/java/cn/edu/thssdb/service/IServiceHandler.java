@@ -61,6 +61,7 @@ public class IServiceHandler implements IService.Iface {
     Manager manager = Manager.getInstance();
 
     // begin transaction
+    // TODO: you know
     if (req.statement.equalsIgnoreCase("begin transaction")) {
       if (manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
@@ -128,7 +129,7 @@ public class IServiceHandler implements IService.Iface {
       if (logType.contains(plan.getType())) {
         manager.persistCurrentDatabase(currentSessionId);
       }
-      System.out.printf("[RELEASE TABLE LOCK %d] %s%n", req.getSessionId(), req.statement);
+      System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
     }
 
     return resp;

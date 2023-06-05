@@ -56,6 +56,9 @@ public class Manager {
   public void persistCurrentDatabase(Long sessionId) {
     if (currentDatabaseName.containsKey(sessionId)) {
       databases.get(currentDatabaseName.get(sessionId)).persist();
+      if (Global.ENABLE_ROLLBACK) {
+        databases.get(currentDatabaseName.get(sessionId)).undoLogger.clearLog();
+      }
     }
   }
 
