@@ -22,7 +22,7 @@ public class Table implements Iterable<Row> {
   private final BPlusTree<Entry, Record> index;
   public int primaryIndex = 0;
 
-  public HashMap<Long, Boolean> updateFlag = new HashMap<>();
+  public HashSet<Long> updateFlag = new HashSet<>();
   public Boolean updateMetaFlag = true;
   // table handler to manage the lock of table
   public class TableHandler implements AutoCloseable {
@@ -40,7 +40,9 @@ public class Table implements Iterable<Row> {
       s = transactionLockManager.sessionId;
 
       if (read) {
-        table.lock.readLock().lock();
+        if (!table.lock.readLock().tryLock()) {
+          table.lock.readLock().lock();
+        }
 //        while(!table.lock.readLock().tryLock());
       }
 
@@ -85,7 +87,7 @@ public class Table implements Iterable<Row> {
   }
 
   public Table.TableHandler getWriteHandler(TransactionLockManager transactionLockManager) {
-    this.updateFlag.put(transactionLockManager.sessionId, true);
+    this.updateFlag.add(transactionLockManager.sessionId);
     return new Table.TableHandler(this, false, true, transactionLockManager);
   }
 
@@ -160,8 +162,11 @@ public class Table implements Iterable<Row> {
   }
 
   public void persist(Long sessionId) {
-    if (!(updateFlag.containsKey(sessionId) && updateFlag.get(sessionId)))
+    if (!(updateFlag.contains(sessionId)))
       return;
+    if (!this.lock.isWriteLockedByCurrentThread()) {
+      return;
+    }
     try {
       System.out.println("[Persist ]" + lock.isWriteLockedByCurrentThread() + " " + sessionId + " " + this.tableName);
       index.bufferManager.writeAllDirty();
@@ -192,9 +197,7 @@ public class Table implements Iterable<Row> {
         System.out.println(e.getMessage());
         e.printStackTrace();
       }
-      if (updateFlag.containsKey(sessionId)) {
-        updateFlag.put(sessionId, false);
-      }
+      updateFlag.remove(sessionId);
     } finally {
 //      if (!lock.isWriteLockedByCurrentThread()) {
 //        lock.readLock().unlock();

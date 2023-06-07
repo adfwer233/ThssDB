@@ -62,9 +62,8 @@ public class QueryTable implements Iterator<Row> {
   public void joinTableWithCondition(Table rightTable, MultipleConditionPlan conditon) {}
 
   public void joinWithTable(Table rightTable) {
-    List<Column> newColumns = new ArrayList<>();
 
-    newColumns.addAll(this.columns);
+    List<Column> newColumns = new ArrayList<>(this.columns);
 
     String rightTableName = rightTable.tableName;
     for (Column col : rightTable.getColumns()) {
@@ -88,7 +87,7 @@ public class QueryTable implements Iterator<Row> {
   }
 
   public String toString() {
-    StringBuffer buffer = new StringBuffer("Query Result\n");
+    StringBuilder buffer = new StringBuilder("Query Result\n");
     for (Column col : columns) {
       buffer.append(col.getName() + '\t');
     }

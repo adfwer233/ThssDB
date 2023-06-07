@@ -125,10 +125,10 @@ public class IServiceHandler implements IService.Iface {
     ExecuteStatementResp resp = PlanHandler.handlePlan(plan, currentSessionId, manager);
 
     if (!manager.currentSessions.contains(currentSessionId)) {
-      manager.releaseTransactionLocks(currentSessionId);
       if (logType.contains(plan.getType())) {
         manager.persistCurrentDatabase(currentSessionId);
       }
+      manager.releaseTransactionLocks(currentSessionId);
       System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
     }
 

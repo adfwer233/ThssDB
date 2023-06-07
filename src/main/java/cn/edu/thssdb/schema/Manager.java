@@ -65,14 +65,14 @@ public class Manager {
   }
 
   public String showDb() {
-    String res = "";
+    StringBuilder res = new StringBuilder();
     for (Database db : databases.values()) {
-      res += db.getName() + ",";
+      res.append(db.getName()).append(",");
     }
-    if (!res.isEmpty()) {
-      res = res.substring(0, res.length() - 1);
+    if (res.length() > 0) {
+      res = new StringBuilder(res.substring(0, res.length() - 1));
     }
-    return res;
+    return res.toString();
   }
 
   public void persist(Long sessionId) {

@@ -1,6 +1,8 @@
 package cn.edu.thssdb.schema;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class Logger {
@@ -53,7 +55,7 @@ public class Logger {
   public ArrayList<String> readLog() {
     ArrayList<String> logList = new ArrayList<>();
     try {
-      InputStreamReader reader = new InputStreamReader(new FileInputStream(logPath));
+      InputStreamReader reader = new InputStreamReader(Files.newInputStream(Paths.get(logPath)));
       BufferedReader bufferedReader = new BufferedReader(reader);
       String line;
       while ((line = bufferedReader.readLine()) != null) {

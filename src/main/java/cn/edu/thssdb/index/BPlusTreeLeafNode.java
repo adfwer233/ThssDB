@@ -160,7 +160,8 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
         bufferManager.readPage(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
     page.addAll(siblingPage);
     bufferManager.writePage(pageIndex, page);
-    pageCounter.removeIndex(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
+    bufferManager.deletePage(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
+//    pageCounter.removeIndex(((BPlusTreeLeafNode<K, Record>) sibling).pageIndex);
   }
 
   public BPlusTreeLeafNode<K, V> getNext() {

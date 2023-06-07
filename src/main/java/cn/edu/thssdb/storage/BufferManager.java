@@ -6,6 +6,7 @@ import cn.edu.thssdb.utils.Global;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BufferManager {
   public static final Integer BufferSize = 100;
@@ -13,6 +14,7 @@ public class BufferManager {
   private final String tableName;
   private final String tableDir;
 
+  ReentrantReadWriteLock tableLock;
   ArrayList<ArrayList<Row>> buffer = new ArrayList<>();
   ArrayList<Integer> bufferPageIndex = new ArrayList<>();
 
@@ -21,6 +23,7 @@ public class BufferManager {
   public BufferManager(Table table) {
     tableName = table.tableName;
     tableDir = table.getTableFolderPath();
+    tableLock = table.lock;
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
@@ -61,15 +64,17 @@ public class BufferManager {
     boolean found = false;
     for (int i = 0; i < buffer.size(); i++) {
       if (!writeFlag.get(i)) {
-        writeIO(bufferPageIndex.get(i), buffer.get(i));
+//        writeIO(bufferPageIndex.get(i), buffer.get(i));
         buffer.remove(i);
         bufferPageIndex.remove(i);
         writeFlag.remove(i);
         found = true;
-        break;
+        if (buffer.size() <= BufferSize)
+          break;
       }
     }
-
+    assert buffer.size() == bufferPageIndex.size();
+    assert buffer.size() == writeFlag.size();
     if (!found) System.out.println("No page to drop");
     /*
      if all pages are dirty pages, no page will be dropped
@@ -132,6 +137,8 @@ public class BufferManager {
     if (bufferPageIndex.contains(pageIndex)) {
       buffer.set(bufferPageIndex.indexOf(pageIndex), data);
       writeFlag.set(bufferPageIndex.indexOf(pageIndex), true);
+      assert buffer.size() == bufferPageIndex.size();
+      assert buffer.size() == writeFlag.size();
       return;
     }
 
@@ -142,7 +149,8 @@ public class BufferManager {
     buffer.add(data);
     bufferPageIndex.add(pageIndex);
     writeFlag.add(true);
-
+    assert buffer.size() == bufferPageIndex.size();
+    assert buffer.size() == writeFlag.size();
     // buffer full
     if (buffer.size() > BufferSize) {
       dropPage();
@@ -153,26 +161,30 @@ public class BufferManager {
     /*
      * If page in buffer, just return it
      * */
-    if (bufferPageIndex.contains(pageIndex)) {
-      //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
-      return new ArrayList<>(buffer.get(bufferPageIndex.indexOf(pageIndex)));
+    synchronized (this) {
+      if (bufferPageIndex.contains(pageIndex)) {
+        //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
+        assert buffer.size() == bufferPageIndex.size();
+        assert buffer.size() == writeFlag.size();
+        return new ArrayList<>(buffer.get(bufferPageIndex.indexOf(pageIndex)));
+      }
+
+      // get page from file system
+      ArrayList<Row> page = getPage(pageIndex);
+
+      /*
+       * read page and put it into buffer.
+       * if the buffer is full, drop the first page.
+       * */
+
+        buffer.add(page);
+        bufferPageIndex.add(pageIndex);
+        writeFlag.add(false);
+  //    if (buffer.size() > BufferSize) dropPage();
+        assert buffer.size() == bufferPageIndex.size();
+        assert buffer.size() == writeFlag.size();
+        return new ArrayList<>(page);
     }
-
-    // get page from file system
-    ArrayList<Row> page = getPage(pageIndex);
-
-    /*
-     * read page and put it into buffer.
-     * if the buffer is full, drop the first page.
-     * */
-
-    buffer.add(page);
-    bufferPageIndex.add(pageIndex);
-    writeFlag.add(false);
-
-    if (buffer.size() > BufferSize) dropPage();
-
-    return new ArrayList<>(page);
   }
 
   public void flush() {
@@ -182,6 +194,9 @@ public class BufferManager {
   }
 
   public void writeAllDirty() {
+    assert tableLock.isWriteLockedByCurrentThread();
+    assert buffer.size() == bufferPageIndex.size();
+    assert buffer.size() == writeFlag.size();
     for (int i = 0; i < buffer.size(); i++) {
       if (writeFlag.get(i)) {
         writeIO(bufferPageIndex.get(i), buffer.get(i));

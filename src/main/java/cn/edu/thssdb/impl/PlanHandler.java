@@ -58,7 +58,7 @@ public class PlanHandler {
           if (currentDatabase == null) throw new NoCurrentDatabaseException();
           List<Column> columnList = createTablePlan.getColumns();
 
-          Column[] columnsArray = columnList.stream().toArray(Column[]::new);
+          Column[] columnsArray = columnList.toArray(new Column[0]);
           String tmpString = createTablePlan.getTableName();
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
           currentDatabase.persist(currentSessionId);

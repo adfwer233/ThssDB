@@ -28,7 +28,7 @@ public class PageCounter implements Serializable {
 //    }
 //    Integer last = indexList.get(indexList.size() - 1) + 1;
 //    indexList.add(last);
-    Integer last = getMaxIndex() + 1;
+    int last = getMaxIndex() + 1;
     indexList.add(last);
     System.out.println("[ALLOC NEW INDEX] " + last);
     return last;
