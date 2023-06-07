@@ -85,7 +85,7 @@ public class Database {
     return name;
   }
 
-  public void persist() {
+  public void persist(Long sessionId) {
 
     String databaseFolderPath = this.getDatabaseDirPath();
     File databaseFolder = new File(databaseFolderPath);
@@ -118,7 +118,7 @@ public class Database {
       }
 
       // serialize table data
-      table.persist();
+      table.persist(sessionId);
     }
   }
 
@@ -202,10 +202,10 @@ public class Database {
     }
   }
 
-  public void quit() {
+  public void quit(Long sessionId) {
     try {
       this.lock.readLock().lock();
-      this.persist();
+      this.persist(sessionId);
       this.logger.clearLog();
     } finally {
       this.lock.readLock().unlock();
@@ -239,7 +239,7 @@ public class Database {
       return transactionLockManager.getTableHandler(this, tableName, read, write);
     } else {
       // TODO: Exception
-      return getTable(tableName, read, write, new TransactionLockManager());
+      return getTable(tableName, read, write, new TransactionLockManager(sessionId));
     }
   }
 
@@ -252,7 +252,7 @@ public class Database {
       Boolean read,
       Boolean write,
       TransactionLockManager transactionLockManager) {
-
+    System.out.println("getTable " + tables.get(tableName).lock.getReadHoldCount());
     if (read) {
       return tables.get(tableName).getReadHandler(transactionLockManager);
     } else if (write) {

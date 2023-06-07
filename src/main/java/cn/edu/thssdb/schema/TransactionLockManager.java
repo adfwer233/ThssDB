@@ -9,6 +9,12 @@ public class TransactionLockManager {
   private final ArrayList<ReentrantReadWriteLock> readLocks = new ArrayList<>();
   private final ArrayList<ReentrantReadWriteLock> writeLocks = new ArrayList<>();
 
+  public Long sessionId;
+
+  public TransactionLockManager(Long sessionId) {
+    this.sessionId = sessionId;
+  }
+
   public Table.TableHandler getTableHandler(
       Database database, String tableName, Boolean read, Boolean write) {
     Table.TableHandler tableHandler = database.getTable(tableName, read, write, this);
@@ -37,7 +43,7 @@ public class TransactionLockManager {
               "[Read LOCK RELEASE before]"
                   + lock.getReadHoldCount()
                   + " "
-                  + lock.getWriteHoldCount()
+                  + lock.getWriteHoldCount() + " " + lock
                   + "%n");
           lock.readLock().unlock();
           System.out.printf(

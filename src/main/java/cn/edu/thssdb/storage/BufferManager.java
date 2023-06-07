@@ -104,7 +104,7 @@ public class BufferManager {
         return res;
       }
 
-      //      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+      // BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
       ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
       Object inputObject;
@@ -122,8 +122,8 @@ public class BufferManager {
     return res;
   }
 
-  public void writePage(Integer pageIndex, ArrayList<Row> data) {
-
+  public void writePage(Integer pageIndex, ArrayList<Row> t_data) {
+    ArrayList<Row> data = new ArrayList<>(t_data);
     /*
      * If page in buffer
      * replace the current buffered page
@@ -141,7 +141,7 @@ public class BufferManager {
      * */
     buffer.add(data);
     bufferPageIndex.add(pageIndex);
-    writeFlag.add(false);
+    writeFlag.add(true);
 
     // buffer full
     if (buffer.size() > BufferSize) {
@@ -155,7 +155,7 @@ public class BufferManager {
      * */
     if (bufferPageIndex.contains(pageIndex)) {
       //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
-      return buffer.get(bufferPageIndex.indexOf(pageIndex));
+      return new ArrayList<>(buffer.get(bufferPageIndex.indexOf(pageIndex)));
     }
 
     // get page from file system
@@ -172,7 +172,7 @@ public class BufferManager {
 
     if (buffer.size() > BufferSize) dropPage();
 
-    return page;
+    return new ArrayList<>(page);
   }
 
   public void flush() {
@@ -187,6 +187,15 @@ public class BufferManager {
         writeIO(bufferPageIndex.get(i), buffer.get(i));
         writeFlag.set(i, false);
       }
+    }
+  }
+
+  public void deletePage(Integer index) {
+    if (bufferPageIndex.contains(index)) {
+      int indexInBuffer = bufferPageIndex.indexOf(index);
+      bufferPageIndex.remove(indexInBuffer);
+      buffer.remove(indexInBuffer);
+      writeFlag.remove(indexInBuffer);
     }
   }
 

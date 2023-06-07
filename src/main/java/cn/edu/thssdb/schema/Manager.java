@@ -19,10 +19,8 @@ public class Manager {
   public ArrayList<Long> currentSessions = new ArrayList<>();
 
   public Database.DatabaseHandler getCurrentDatabase(Long sessionId, Boolean read, Boolean write) {
-
     try {
       lock.readLock().lock();
-      //      System.out.println(currentDatabaseName.get(sessionId));
       return getDatabaseHandler(currentDatabaseName.get(sessionId), read, write);
     } finally {
       lock.readLock().unlock();
@@ -55,7 +53,7 @@ public class Manager {
 
   public void persistCurrentDatabase(Long sessionId) {
     if (currentDatabaseName.containsKey(sessionId)) {
-      databases.get(currentDatabaseName.get(sessionId)).persist();
+      databases.get(currentDatabaseName.get(sessionId)).persist(sessionId);
       if (Global.ENABLE_ROLLBACK) {
         databases.get(currentDatabaseName.get(sessionId)).undoLogger.clearLog();
       }
@@ -77,7 +75,7 @@ public class Manager {
     return res;
   }
 
-  public void persist() {
+  public void persist(Long sessionId) {
     try {
       File managerFile = new File(Manager.getManagerDirPath());
       System.out.println(Manager.getManagerDataFilePath());
@@ -88,7 +86,7 @@ public class Manager {
       OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
       for (Database database : this.databases.values()) {
         outputStreamWriter.write(database.getName() + "\n");
-        database.persist();
+        database.persist(sessionId);
         database.logger.clearLog();
         database.undoLogger.clearLog();
       }
@@ -114,7 +112,7 @@ public class Manager {
         createDatabaseIfNotExists(line);
         Database database = databases.get(line);
         database.recover();
-        database.transactionLockManagers.put(tmpSessionId, new TransactionLockManager());
+        database.transactionLockManagers.put(tmpSessionId, new TransactionLockManager(tmpSessionId));
         currentDatabaseName.put(tmpSessionId, database.getName());
         // recover from log
         ArrayList<String> logs = database.logger.readLog();
@@ -148,7 +146,6 @@ public class Manager {
       if (databases.containsKey(databaseName)) throw new DatabaseExistException(databaseName);
       Database newDatabase = new Database(databaseName);
       databases.put(databaseName, newDatabase);
-      newDatabase.persist();
     } finally {
       lock.writeLock().unlock();
     }
@@ -186,7 +183,7 @@ public class Manager {
       Database db = databases.get(databaseName);
       if (!db.transactionLockManagers.containsKey(sessionId)) {
         System.out.println("init transaction manager");
-        db.transactionLockManagers.put(sessionId, new TransactionLockManager());
+        db.transactionLockManagers.put(sessionId, new TransactionLockManager(sessionId));
       }
     } finally {
       lock.writeLock().unlock();

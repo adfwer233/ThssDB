@@ -23,7 +23,7 @@ public class PlanHandler {
         CreateDatabasePlan createPlan = (CreateDatabasePlan) plan;
         try {
           manager.createDatabaseIfNotExists(createPlan.getDatabaseName());
-          manager.persist();
+          manager.persist(currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Create Success"), false);
         } catch (Exception e) {
           e.printStackTrace();
@@ -35,7 +35,7 @@ public class PlanHandler {
         DropDatabasePlan dropPlan = (DropDatabasePlan) plan;
         try {
           manager.deleteDatabase(dropPlan.getDatabaseName());
-          manager.persist();
+          manager.persist(currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Drop success"), false);
         } catch (KeyNotExistException e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
@@ -61,7 +61,7 @@ public class PlanHandler {
           Column[] columnsArray = columnList.stream().toArray(Column[]::new);
           String tmpString = createTablePlan.getTableName();
           currentDatabase.create(createTablePlan.getTableName(), columnsArray);
-          currentDatabase.persist();
+          currentDatabase.persist(currentSessionId);
           return new ExecuteStatementResp(
               StatusUtil.success(currentDatabase.getTableInfo(createTablePlan.getTableName())),
               false);
@@ -108,7 +108,7 @@ public class PlanHandler {
       case INSERT:
         InsertPlan insertPlan = (InsertPlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-            manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           InsertImpl.handleInsertPlan(
               insertPlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Insert success"), false);
@@ -129,7 +129,7 @@ public class PlanHandler {
         System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
-            manager.getCurrentDatabase(currentSessionId, false, true)) {
+            manager.getCurrentDatabase(currentSessionId, true, false)) {
           DeleteImpl.handleDeletePlan(
               deletePlan, currentDatabaseHandler.getDatabase(), currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("Delete success"), false);
@@ -163,7 +163,7 @@ public class PlanHandler {
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, false, true)) {
           Database database = currentDatabaseHandler.getDatabase();
-          database.quit();
+          database.quit(currentSessionId);
           return new ExecuteStatementResp(StatusUtil.success("quit success"), false);
         } catch (Exception e) {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);

@@ -7,20 +7,22 @@ import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.apache.commons.logging.Log;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Table implements Iterable<Row> {
-  ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+  public ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
   private final String databaseName;
   public String tableName;
   public ArrayList<Column> columns;
   private final BPlusTree<Entry, Record> index;
   public int primaryIndex = 0;
 
-  private Boolean updateFlag = false;
+  public HashMap<Long, Boolean> updateFlag = new HashMap<>();
   public Boolean updateMetaFlag = true;
   // table handler to manage the lock of table
   public class TableHandler implements AutoCloseable {
@@ -28,15 +30,18 @@ public class Table implements Iterable<Row> {
     private final Table table;
     public Boolean hasReadLock;
     public Boolean hasWriteLock;
+    private Long s;
 
     public TableHandler(
         Table table, Boolean read, Boolean write, TransactionLockManager transactionLockManager) {
       this.table = table;
       this.hasReadLock = read;
       this.hasWriteLock = write;
+      s = transactionLockManager.sessionId;
 
       if (read) {
         table.lock.readLock().lock();
+//        while(!table.lock.readLock().tryLock());
       }
 
       if (write) {
@@ -49,7 +54,7 @@ public class Table implements Iterable<Row> {
             if (!table.lock.writeLock().tryLock()) {
               System.out.println("[UPDATE LOCK]");
               // 再次获取
-              transactionLockManager.releaseReadLock(lock);
+              transactionLockManager.releaseReadLock(table.lock);
               table.lock.writeLock().lock();
             }
           }
@@ -68,7 +73,6 @@ public class Table implements Iterable<Row> {
       // or abort).
       if (Global.isolationLevel == Global.IsolationLevel.READ_COMMITTED) {
         if (this.hasReadLock) {
-          System.out.printf("[READ LOCK RELEASED %s]%n", table.tableName);
           this.table.lock.readLock().unlock();
           this.hasReadLock = false;
         }
@@ -81,6 +85,7 @@ public class Table implements Iterable<Row> {
   }
 
   public Table.TableHandler getWriteHandler(TransactionLockManager transactionLockManager) {
+    this.updateFlag.put(transactionLockManager.sessionId, true);
     return new Table.TableHandler(this, false, true, transactionLockManager);
   }
 
@@ -97,7 +102,7 @@ public class Table implements Iterable<Row> {
 
     this.databaseName = databaseName;
     this.tableName = tableName;
-    this.columns = new ArrayList(Arrays.asList(columns));
+    this.columns = new ArrayList<>(Arrays.asList(columns));
 
     index = new BPlusTree<>(this);
   }
@@ -154,43 +159,46 @@ public class Table implements Iterable<Row> {
     }
   }
 
-  public void persist() {
+  public void persist(Long sessionId) {
+    if (!(updateFlag.containsKey(sessionId) && updateFlag.get(sessionId)))
+      return;
     try {
-      lock.readLock().lock();
-      if (updateFlag) {
-        index.bufferManager.writeAllDirty();
-        // persist the index (page indices)
-        try {
-          File tableFolder = new File(getTableFolderPath());
-          if (!tableFolder.exists()) tableFolder.mkdirs();
+      System.out.println("[Persist ]" + lock.isWriteLockedByCurrentThread() + " " + sessionId + " " + this.tableName);
+      index.bufferManager.writeAllDirty();
+      try {
+        File tableFolder = new File(getTableFolderPath());
+        if (!tableFolder.exists()) tableFolder.mkdirs();
 
-          File tableFile = new File(getTableIndexPath());
-          if (!tableFile.exists()) tableFile.createNewFile();
+        File tableFile = new File(getTableIndexPath());
+        if (!tableFile.exists()) tableFile.createNewFile();
 
-          System.out.println("[IO INDEX] " + tableFile);
+        System.out.println("[IO INDEX] " + tableFile);
 
-          if (index.pageCounter.updated) {
+        if (index.pageCounter.updated) {
 
-            index.pageCounter.updated = false;
+          index.pageCounter.updated = false;
 
-            FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
+          FileOutputStream fileOutputStream = new FileOutputStream(tableFile);
+          BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+          ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
 
-            objectOutputStream.writeObject(index.pageCounter);
+          objectOutputStream.writeObject(index.pageCounter);
 
-            objectOutputStream.close();
-            bufferedOutputStream.flush();
-            bufferedOutputStream.close();
-          }
-        } catch (Exception e) {
-          System.out.println(e.getMessage());
-          e.printStackTrace();
+          objectOutputStream.close();
+          bufferedOutputStream.flush();
+          bufferedOutputStream.close();
         }
-        updateFlag = false;
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        e.printStackTrace();
+      }
+      if (updateFlag.containsKey(sessionId)) {
+        updateFlag.put(sessionId, false);
       }
     } finally {
-      lock.readLock().unlock();
+//      if (!lock.isWriteLockedByCurrentThread()) {
+//        lock.readLock().unlock();
+//      }
     }
   }
 
@@ -212,11 +220,15 @@ public class Table implements Iterable<Row> {
 
     Record record = new Record(new Row(entries));
     index.put(entries.get(primaryIndex), record);
-    updateFlag = true;
   }
 
   public void removePrimaryKey(Entry key) {
-    index.remove(key);
+    try {
+      index.remove(key);
+    }
+    catch (KeyNotExistException e) {
+
+    }
   }
 
   public void updateByPrimaryKey(Entry key, String columnName, Entry entry) {
@@ -272,7 +284,6 @@ public class Table implements Iterable<Row> {
       throw new KeyNotExistException();
     }
     this.index.remove(row.getEntries().get(this.primaryIndex));
-    updateFlag = true;
   }
 
   public void update(Entry entry, Row newRow, ArrayList<String> attrList) {
