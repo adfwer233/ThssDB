@@ -112,7 +112,8 @@ public class Manager {
         createDatabaseIfNotExists(line);
         Database database = databases.get(line);
         database.recover();
-        database.transactionLockManagers.put(tmpSessionId, new TransactionLockManager(tmpSessionId));
+        database.transactionLockManagers.put(
+            tmpSessionId, new TransactionLockManager(tmpSessionId));
         currentDatabaseName.put(tmpSessionId, database.getName());
         // recover from log
         ArrayList<String> logs = database.logger.readLog();

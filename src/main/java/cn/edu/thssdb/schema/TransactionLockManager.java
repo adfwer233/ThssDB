@@ -43,7 +43,9 @@ public class TransactionLockManager {
               "[Read LOCK RELEASE before]"
                   + lock.getReadHoldCount()
                   + " "
-                  + lock.getWriteHoldCount() + " " + lock
+                  + lock.getWriteHoldCount()
+                  + " "
+                  + lock
                   + "%n");
           lock.readLock().unlock();
           System.out.printf(

@@ -7,8 +7,6 @@ import cn.edu.thssdb.index.PageCounter;
 import cn.edu.thssdb.index.RecordTreeIterator;
 import cn.edu.thssdb.utils.Global;
 import cn.edu.thssdb.utils.Pair;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.commons.logging.Log;
 
 import java.io.*;
 import java.util.*;
@@ -43,7 +41,7 @@ public class Table implements Iterable<Row> {
         if (!table.lock.readLock().tryLock()) {
           table.lock.readLock().lock();
         }
-//        while(!table.lock.readLock().tryLock());
+        //        while(!table.lock.readLock().tryLock());
       }
 
       if (write) {
@@ -162,13 +160,18 @@ public class Table implements Iterable<Row> {
   }
 
   public void persist(Long sessionId) {
-    if (!(updateFlag.contains(sessionId)))
-      return;
+    if (!(updateFlag.contains(sessionId))) return;
     if (!this.lock.isWriteLockedByCurrentThread()) {
       return;
     }
     try {
-      System.out.println("[Persist ]" + lock.isWriteLockedByCurrentThread() + " " + sessionId + " " + this.tableName);
+      System.out.println(
+          "[Persist ]"
+              + lock.isWriteLockedByCurrentThread()
+              + " "
+              + sessionId
+              + " "
+              + this.tableName);
       index.bufferManager.writeAllDirty();
       try {
         File tableFolder = new File(getTableFolderPath());
@@ -199,9 +202,9 @@ public class Table implements Iterable<Row> {
       }
       updateFlag.remove(sessionId);
     } finally {
-//      if (!lock.isWriteLockedByCurrentThread()) {
-//        lock.readLock().unlock();
-//      }
+      //      if (!lock.isWriteLockedByCurrentThread()) {
+      //        lock.readLock().unlock();
+      //      }
     }
   }
 
@@ -228,8 +231,7 @@ public class Table implements Iterable<Row> {
   public void removePrimaryKey(Entry key) {
     try {
       index.remove(key);
-    }
-    catch (KeyNotExistException e) {
+    } catch (KeyNotExistException e) {
 
     }
   }

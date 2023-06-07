@@ -27,7 +27,12 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    System.out.printf("[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n", buffer.size(), tableName, Runtime.getRuntime().maxMemory(), Runtime.getRuntime().totalMemory());
+    System.out.printf(
+        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
+        buffer.size(),
+        tableName,
+        Runtime.getRuntime().maxMemory(),
+        Runtime.getRuntime().totalMemory());
     System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
@@ -64,13 +69,12 @@ public class BufferManager {
     boolean found = false;
     for (int i = 0; i < buffer.size(); i++) {
       if (!writeFlag.get(i)) {
-//        writeIO(bufferPageIndex.get(i), buffer.get(i));
+        //        writeIO(bufferPageIndex.get(i), buffer.get(i));
         buffer.remove(i);
         bufferPageIndex.remove(i);
         writeFlag.remove(i);
         found = true;
-        if (buffer.size() <= BufferSize)
-          break;
+        if (buffer.size() <= BufferSize) break;
       }
     }
     assert buffer.size() == bufferPageIndex.size();
@@ -163,7 +167,8 @@ public class BufferManager {
      * */
     synchronized (this) {
       if (bufferPageIndex.contains(pageIndex)) {
-        //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex, tableName));
+        //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex,
+        // tableName));
         assert buffer.size() == bufferPageIndex.size();
         assert buffer.size() == writeFlag.size();
         return new ArrayList<>(buffer.get(bufferPageIndex.indexOf(pageIndex)));
@@ -177,13 +182,13 @@ public class BufferManager {
        * if the buffer is full, drop the first page.
        * */
 
-        buffer.add(page);
-        bufferPageIndex.add(pageIndex);
-        writeFlag.add(false);
-  //    if (buffer.size() > BufferSize) dropPage();
-        assert buffer.size() == bufferPageIndex.size();
-        assert buffer.size() == writeFlag.size();
-        return new ArrayList<>(page);
+      buffer.add(page);
+      bufferPageIndex.add(pageIndex);
+      writeFlag.add(false);
+      //    if (buffer.size() > BufferSize) dropPage();
+      assert buffer.size() == bufferPageIndex.size();
+      assert buffer.size() == writeFlag.size();
+      return new ArrayList<>(page);
     }
   }
 
