@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BufferManager {
-  public static final Integer BufferSize = 1000;
+  public static final Integer BufferSize = 5000;
 
   private final String tableName;
   private final String tableDir;
@@ -27,13 +27,13 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-//    System.out.printf(
-//        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
-//        buffer.size(),
-//        tableName,
-//        Runtime.getRuntime().maxMemory(),
-//        Runtime.getRuntime().totalMemory());
-//    System.out.flush();
+    //    System.out.printf(
+    //        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
+    //        buffer.size(),
+    //        tableName,
+    //        Runtime.getRuntime().maxMemory(),
+    //        Runtime.getRuntime().totalMemory());
+    //    System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
       folder.mkdirs();
@@ -57,7 +57,7 @@ public class BufferManager {
       }
 
       objectOutputStream.close();
-//      bufferedOutputStream.flush();
+      //      bufferedOutputStream.flush();
       bufferedOutputStream.close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -104,8 +104,8 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
-//      System.out.printf("[Page IO Read] [BUFFER SIZE %d] %s%n", buffer.size(), pagePath);
-//      System.out.flush();
+      //      System.out.printf("[Page IO Read] [BUFFER SIZE %d] %s%n", buffer.size(), pagePath);
+      //      System.out.flush();
       FileInputStream fileInputStream = new FileInputStream(pagePath);
 
       if (fileInputStream.available() <= 0) {

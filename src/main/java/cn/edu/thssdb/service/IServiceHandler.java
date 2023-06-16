@@ -53,14 +53,15 @@ public class IServiceHandler implements IService.Iface {
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
 
-//    System.out.printf("[Statement %d] %s%n", req.getSessionId(), req.statement);
-//    System.out.flush();
+    //    System.out.printf("[Statement %d] %s%n", req.getSessionId(), req.statement);
+    //    System.out.flush();
     long currentSessionId = req.getSessionId();
 
     Manager manager = Manager.getInstance();
 
     // begin transaction
-    if (req.statement.equalsIgnoreCase("begin transaction") || req.statement.equalsIgnoreCase("begin transaction;")) {
+    if (req.statement.equalsIgnoreCase("begin transaction")
+        || req.statement.equalsIgnoreCase("begin transaction;")) {
       if (manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session already in a Transaction"), false);
@@ -126,7 +127,7 @@ public class IServiceHandler implements IService.Iface {
         manager.persistCurrentDatabase(currentSessionId);
       }
       manager.releaseTransactionLocks(currentSessionId);
-//      System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
+      //      System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
     }
 
     return resp;

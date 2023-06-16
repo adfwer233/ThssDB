@@ -39,21 +39,21 @@ public class TransactionLockManager {
     if (Global.isolationLevel == Global.IsolationLevel.SERIALIZABLE) {
       for (ReentrantReadWriteLock lock : readLocks) {
         try {
-//          System.out.printf(
-//              "[Read LOCK RELEASE before]"
-//                  + lock.getReadHoldCount()
-//                  + " "
-//                  + lock.getWriteHoldCount()
-//                  + " "
-//                  + lock
-//                  + "%n");
+          //          System.out.printf(
+          //              "[Read LOCK RELEASE before]"
+          //                  + lock.getReadHoldCount()
+          //                  + " "
+          //                  + lock.getWriteHoldCount()
+          //                  + " "
+          //                  + lock
+          //                  + "%n");
           lock.readLock().unlock();
-//          System.out.printf(
-//              "[Read LOCK RELEASE after]"
-//                  + lock.getReadHoldCount()
-//                  + " "
-//                  + lock.getWriteHoldCount()
-//                  + "%n");
+          //          System.out.printf(
+          //              "[Read LOCK RELEASE after]"
+          //                  + lock.getReadHoldCount()
+          //                  + " "
+          //                  + lock.getWriteHoldCount()
+          //                  + "%n");
         } catch (IllegalMonitorStateException e) {
           System.out.println(e.getMessage());
         }
@@ -62,8 +62,9 @@ public class TransactionLockManager {
 
     for (ReentrantReadWriteLock lock : writeLocks) {
       lock.writeLock().unlock();
-//      System.out.printf(
-//          "[WRITE LOCK RELEASE]" + lock.getReadLockCount() + " " + lock.getWriteHoldCount() + "%n");
+      //      System.out.printf(
+      //          "[WRITE LOCK RELEASE]" + lock.getReadLockCount() + " " + lock.getWriteHoldCount()
+      // + "%n");
     }
 
     readLocks.clear();

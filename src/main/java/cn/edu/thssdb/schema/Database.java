@@ -252,7 +252,7 @@ public class Database {
       Boolean read,
       Boolean write,
       TransactionLockManager transactionLockManager) {
-//    System.out.println("getTable " + tables.get(tableName).lock.getReadHoldCount());
+    //    System.out.println("getTable " + tables.get(tableName).lock.getReadHoldCount());
     if (read) {
       return tables.get(tableName).getReadHandler(transactionLockManager);
     } else if (write) {

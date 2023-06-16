@@ -32,7 +32,7 @@ public class Global {
     SERIALIZABLE
   }
 
-  public static final IsolationLevel isolationLevel = IsolationLevel.READ_COMMITTED;
+  public static final IsolationLevel isolationLevel = IsolationLevel.SERIALIZABLE;
 
   public static final Boolean ENABLE_ROLLBACK = false;
 }
