@@ -67,7 +67,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     ArrayList<Row> page = bufferManager.readPage(pageIndex);
     int index = binarySearch(key);
     int valueIndex = index >= 0 ? index : -index - 1;
-    System.out.printf("[B PLUS LEAF] SIZE %d %d index %d%n", nodeSize, page.size(), pageIndex);
+//    System.out.printf("[B PLUS LEAF] SIZE %d %d index %d%n", nodeSize, page.size(), pageIndex);
     if (index >= 0) {
       System.out.println(keys.get(index));
       System.out.println(key);
@@ -92,7 +92,7 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
       keysRemove(index);
       page.remove(index);
     } else throw new KeyNotExistException();
-    System.out.printf("[REMOVE %d %d]%n", page.size(), nodeSize);
+//    System.out.printf("[REMOVE %d %d]%n", page.size(), nodeSize);
     bufferManager.writePage(pageIndex, page);
   }
 
@@ -133,9 +133,9 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
     ArrayList<Row> siblingPage = new ArrayList<>();
     for (int i = from; i < to; i++) siblingPage.add(page.get(i));
     for (int i = from; i < to; i++) page.remove(page.size() - 1);
-    System.out.printf(
-        "[Split] %d %d %d %d%n",
-        page.size(), siblingPage.size(), nodeSize, newSiblingNode.nodeSize);
+//    System.out.printf(
+//        "[Split] %d %d %d %d%n",
+//        page.size(), siblingPage.size(), nodeSize, newSiblingNode.nodeSize);
     bufferManager.writePage(pageIndex, page);
     bufferManager.writePage(newSiblingNode.pageIndex, siblingPage);
 

@@ -53,16 +53,14 @@ public class IServiceHandler implements IService.Iface {
           StatusUtil.fail("You are not connected. Please connect first."), false);
     }
 
-    System.out.printf("[Statement %d] %s%n", req.getSessionId(), req.statement);
-    System.out.flush();
-    // TODO: maintain a map from session id to current database
+//    System.out.printf("[Statement %d] %s%n", req.getSessionId(), req.statement);
+//    System.out.flush();
     long currentSessionId = req.getSessionId();
 
     Manager manager = Manager.getInstance();
 
     // begin transaction
-    // TODO: you know
-    if (req.statement.equalsIgnoreCase("begin transaction")) {
+    if (req.statement.equalsIgnoreCase("begin transaction") || req.statement.equalsIgnoreCase("begin transaction;")) {
       if (manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session already in a Transaction"), false);
@@ -73,7 +71,7 @@ public class IServiceHandler implements IService.Iface {
     }
 
     // commit
-    if (req.statement.equalsIgnoreCase("commit;")) {
+    if (req.statement.equalsIgnoreCase("commit") || req.statement.equalsIgnoreCase("commit;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session not in a Transaction now"), false);
@@ -86,7 +84,7 @@ public class IServiceHandler implements IService.Iface {
       }
     }
 
-    if (req.statement.equalsIgnoreCase("rollback;")) {
+    if (req.statement.equalsIgnoreCase("rollback") || req.statement.equalsIgnoreCase("rollback;")) {
       if (!manager.currentSessions.contains(currentSessionId)) {
         return new ExecuteStatementResp(
             StatusUtil.fail("This session not in a Transaction now"), false);
@@ -96,7 +94,6 @@ public class IServiceHandler implements IService.Iface {
       }
     }
 
-    // TODO: implement execution logic
     LogicalPlan plan = LogicalGenerator.generate(req.statement);
 
     ArrayList<LogicalPlan.LogicalPlanType> logType =
@@ -129,7 +126,7 @@ public class IServiceHandler implements IService.Iface {
         manager.persistCurrentDatabase(currentSessionId);
       }
       manager.releaseTransactionLocks(currentSessionId);
-      System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
+//      System.out.printf("[RELEASE TABLE LOCK %d] %s %n", req.getSessionId(), req.statement);
     }
 
     return resp;

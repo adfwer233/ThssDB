@@ -30,7 +30,7 @@ public class UpdateImpl {
       if (!updatePlan.getWhereCond().hasChild) {
         SingleConditionPlan singleConditionPlan = updatePlan.getWhereCond().singleConditionPlan;
         if (singleConditionPlan.expr1.type == ComparerType.COLUMN
-            && singleConditionPlan.expr2.type != ComparerType.COLUMN) {
+            && singleConditionPlan.expr2.type != ComparerType.COLUMN  && singleConditionPlan.comparator.equals("=") ) {
           String attrName = singleConditionPlan.expr1.columnName;
           if (currentTable.Column2Index(attrName) == currentTable.primaryIndex) {
             currentTable.updateByPrimaryKey(

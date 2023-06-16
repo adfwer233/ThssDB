@@ -126,7 +126,7 @@ public class PlanHandler {
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case DELETE:
-        System.out.println("DELETE");
+//        System.out.println("DELETE");
         DeletePlan deletePlan = (DeletePlan) plan;
         try (Database.DatabaseHandler currentDatabaseHandler =
             manager.getCurrentDatabase(currentSessionId, true, false)) {
@@ -156,7 +156,7 @@ public class PlanHandler {
           return resp;
         } catch (Exception e) {
           e.printStackTrace();
-          System.out.flush();
+//          System.out.flush();
           return new ExecuteStatementResp(StatusUtil.fail(e.getMessage()), false);
         }
       case QUIT:

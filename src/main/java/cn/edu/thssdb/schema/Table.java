@@ -52,7 +52,7 @@ public class Table implements Iterable<Row> {
             table.lock.writeLock().lock();
           } else {
             if (!table.lock.writeLock().tryLock()) {
-              System.out.println("[UPDATE LOCK]");
+//              System.out.println("[UPDATE LOCK]");
               // 再次获取
               transactionLockManager.releaseReadLock(table.lock);
               table.lock.writeLock().lock();
@@ -165,13 +165,13 @@ public class Table implements Iterable<Row> {
       return;
     }
     try {
-      System.out.println(
-          "[Persist ]"
-              + lock.isWriteLockedByCurrentThread()
-              + " "
-              + sessionId
-              + " "
-              + this.tableName);
+//      System.out.println(
+//          "[Persist ]"
+//              + lock.isWriteLockedByCurrentThread()
+//              + " "
+//              + sessionId
+//              + " "
+//              + this.tableName);
       index.bufferManager.writeAllDirty();
       try {
         File tableFolder = new File(getTableFolderPath());
@@ -180,7 +180,7 @@ public class Table implements Iterable<Row> {
         File tableFile = new File(getTableIndexPath());
         if (!tableFile.exists()) tableFile.createNewFile();
 
-        System.out.println("[IO INDEX] " + tableFile);
+//        System.out.println("[IO INDEX] " + tableFile);
 
         if (index.pageCounter.updated) {
 

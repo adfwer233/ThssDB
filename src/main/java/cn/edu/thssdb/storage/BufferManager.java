@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BufferManager {
-  public static final Integer BufferSize = 100;
+  public static final Integer BufferSize = 1000;
 
   private final String tableName;
   private final String tableDir;
@@ -27,13 +27,13 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    System.out.printf(
-        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
-        buffer.size(),
-        tableName,
-        Runtime.getRuntime().maxMemory(),
-        Runtime.getRuntime().totalMemory());
-    System.out.flush();
+//    System.out.printf(
+//        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
+//        buffer.size(),
+//        tableName,
+//        Runtime.getRuntime().maxMemory(),
+//        Runtime.getRuntime().totalMemory());
+//    System.out.flush();
     File folder = new File(tableDir);
     if (!folder.exists()) {
       folder.mkdirs();
@@ -52,13 +52,12 @@ public class BufferManager {
       FileOutputStream fileOutputStream = new FileOutputStream(pagePath);
       BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
       ObjectOutputStream objectOutputStream = new ObjectOutputStream(bufferedOutputStream);
-
       for (Row row : page) {
         objectOutputStream.writeObject(row);
       }
 
       objectOutputStream.close();
-      bufferedOutputStream.flush();
+//      bufferedOutputStream.flush();
       bufferedOutputStream.close();
     } catch (IOException e) {
       e.printStackTrace();
@@ -105,19 +104,19 @@ public class BufferManager {
 
     ArrayList<Row> res = new ArrayList<>();
     try {
-      System.out.printf("[Page IO Read] [BUFFER SIZE %d] %s%n", buffer.size(), pagePath);
-      System.out.flush();
+//      System.out.printf("[Page IO Read] [BUFFER SIZE %d] %s%n", buffer.size(), pagePath);
+//      System.out.flush();
       FileInputStream fileInputStream = new FileInputStream(pagePath);
 
       if (fileInputStream.available() <= 0) {
         return res;
       }
 
-      // BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-      ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+      ObjectInputStream objectInputStream = new ObjectInputStream(bufferedInputStream);
 
       Object inputObject;
-      while (fileInputStream.available() > 0) {
+      while (bufferedInputStream.available() > 0) {
         inputObject = objectInputStream.readObject();
         res.add((Row) inputObject);
       }
@@ -132,7 +131,7 @@ public class BufferManager {
   }
 
   public void writePage(Integer pageIndex, ArrayList<Row> t_data) {
-    ArrayList<Row> data = new ArrayList<>(t_data);
+    ArrayList<Row> data = t_data;
     /*
      * If page in buffer
      * replace the current buffered page
@@ -173,9 +172,12 @@ public class BufferManager {
         assert buffer.size() == writeFlag.size();
         return new ArrayList<>(buffer.get(bufferPageIndex.indexOf(pageIndex)));
       }
+    }
 
+    ArrayList<Row> page = getPage(pageIndex);
+
+    synchronized (this) {
       // get page from file system
-      ArrayList<Row> page = getPage(pageIndex);
 
       /*
        * read page and put it into buffer.
@@ -188,7 +190,7 @@ public class BufferManager {
       //    if (buffer.size() > BufferSize) dropPage();
       assert buffer.size() == bufferPageIndex.size();
       assert buffer.size() == writeFlag.size();
-      return new ArrayList<>(page);
+      return page;
     }
   }
 
@@ -202,6 +204,7 @@ public class BufferManager {
     assert tableLock.isWriteLockedByCurrentThread();
     assert buffer.size() == bufferPageIndex.size();
     assert buffer.size() == writeFlag.size();
+
     for (int i = 0; i < buffer.size(); i++) {
       if (writeFlag.get(i)) {
         writeIO(bufferPageIndex.get(i), buffer.get(i));

@@ -11,7 +11,7 @@ public class PageCounter implements Serializable {
     return indexList.get(indexList.size() - 1);
   }
 
-  public boolean updated = false;
+  transient public boolean updated = false;
 
   public int allocNewIndex() {
     updated = true;
@@ -30,7 +30,7 @@ public class PageCounter implements Serializable {
     //    indexList.add(last);
     int last = getMaxIndex() + 1;
     indexList.add(last);
-    System.out.println("[ALLOC NEW INDEX] " + last);
+//    System.out.println("[ALLOC NEW INDEX] " + last);
     return last;
   }
 

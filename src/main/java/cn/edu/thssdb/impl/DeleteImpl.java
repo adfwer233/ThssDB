@@ -24,7 +24,7 @@ public class DeleteImpl {
       if (!deletePlan.getWhereCond().hasChild) {
         SingleConditionPlan singleConditionPlan = deletePlan.getWhereCond().singleConditionPlan;
         if (singleConditionPlan.expr1.type == ComparerType.COLUMN
-            && singleConditionPlan.expr2.type != ComparerType.COLUMN) {
+            && singleConditionPlan.expr2.type != ComparerType.COLUMN && singleConditionPlan.comparator.equals("=")) {
           String attrName = singleConditionPlan.expr1.columnName;
           if (currentTable.Column2Index(attrName) == currentTable.primaryIndex) {
             currentTable.removePrimaryKey(

@@ -55,28 +55,24 @@ public class SelectImpl {
         String columnName1 = singleConditionPlan.expr1.columnName;
         String columnName2 = singleConditionPlan.expr2.columnName;
 
-        try (Table.TableHandler tableHandler1 =
-            db.getTableForSession(sessionId, tableName1, true, false)) {
-          try (Table.TableHandler tableHandler2 =
-              db.getTableForSession(sessionId, tableName2, true, false)) {
-            int primary1 = tableHandler1.getTable().primaryIndex;
-            int primary2 = tableHandler2.getTable().primaryIndex;
-            System.out.println("[ALL PRIMARY KEY JOIN]" + primary1 + " " + primary2);
-            System.out.println(
-                columnName1
-                    + " "
-                    + columnName2
-                    + " "
-                    + tableHandler1.getTable().getColumns().get(primary1).getName()
-                    + " "
-                    + tableHandler2.getTable().getColumns().get(primary2).getName());
-            if (columnName1.equals(tableHandler1.getTable().getColumns().get(primary1).getName())
-                && columnName2.equals(
-                    tableHandler2.getTable().getColumns().get(primary2).getName())) {
-              return true;
-            }
-          }
-        }
+        Table table1 = db.getTableWithoutLock(tableName1);
+        Table table2 = db.getTableWithoutLock(tableName2);
+
+        int primary1 = table1.primaryIndex;
+        int primary2 = table2.primaryIndex;
+//            System.out.println("[ALL PRIMARY KEY JOIN]" + primary1 + " " + primary2);
+//            System.out.println(
+//                columnName1
+//                    + " "
+//                    + columnName2
+//                    + " "
+//                    + tableHandler1.getTable().getColumns().get(primary1).getName()
+//                    + " "
+//                    + tableHandler2.getTable().getColumns().get(primary2).getName());
+//        System.out.printf("%s %s %s %s %n", columnName1, columnName2, table1.getColumns().get(primary1).getName(), table1.getColumns().get(primary1).getName());
+        return columnName1.equals(table1.getColumns().get(primary1).getName())
+                && columnName2.equals(table2.getColumns().get(primary2).getName());
+
       }
     }
     return false;
@@ -108,7 +104,7 @@ public class SelectImpl {
           if (table.Column2Index(columnName) == table.primaryIndex) {
             Entry key = new Entry((Comparable) singleConditionPlan.expr2.getValue());
             ArrayList<Row> res = table.getRowsByPrimaryKey(key);
-            System.out.println("[Primary select] " + res.size());
+//            System.out.println("[Primary select] " + res.size());
             targetTable = new QueryTable(table, res);
 
             for (Column column : targetTable.columns) {
@@ -146,7 +142,7 @@ public class SelectImpl {
               res.addAll(findRows);
             }
           }
-          System.out.println("[PRIMARY JOIN] " + res.size());
+//          System.out.println("[PRIMARY JOIN] " + res.size());
           targetTable = new QueryTable(table1, table2, res);
 
           for (Column column : targetTable.columns) {
@@ -189,7 +185,7 @@ public class SelectImpl {
       }
     }
 
-    System.out.println(targetTable.toString());
+//    System.out.println(targetTable.toString());
 
     // where condition
     MultipleConditionPlan whereConditionPlan = plan.getWhereConditionPlan();
