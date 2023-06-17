@@ -64,23 +64,37 @@ public class BPlusTreeLeafNode<K extends Comparable<K>, V extends Record>
 
   @Override
   void put(K key, V value) {
-    ArrayList<Row> page = bufferManager.readPage(pageIndex);
     int index = binarySearch(key);
     int valueIndex = index >= 0 ? index : -index - 1;
     //    System.out.printf("[B PLUS LEAF] SIZE %d %d index %d%n", nodeSize, page.size(),
     // pageIndex);
-    if (index >= 0) {
-      System.out.println(keys.get(index));
-      System.out.println(key);
-      System.out.println(value);
-      throw new DuplicateKeyException();
+
+    if (value.hasContent()) {
+      ArrayList<Row> page = bufferManager.readPage(pageIndex);
+      if (index >= 0) {
+        System.out.println(keys.get(index));
+        System.out.println(key);
+        System.out.println(value);
+        throw new DuplicateKeyException();
+      } else {
+        page.add(valueIndex, value.getContent());
+        value.removeContent();
+        valuesAdd(valueIndex, value);
+        keysAdd(valueIndex, key);
+      }
+      bufferManager.writePage(pageIndex, page);
     } else {
-      page.add(valueIndex, value.getContent());
-      value.removeContent();
-      valuesAdd(valueIndex, value);
-      keysAdd(valueIndex, key);
+      // recover the index tree
+      if (index >= 0) {
+        System.out.println(keys.get(index));
+        System.out.println(key);
+        System.out.println(value);
+        throw new DuplicateKeyException();
+      } else {
+        valuesAdd(valueIndex, value);
+        keysAdd(valueIndex, key);
+      }
     }
-    bufferManager.writePage(pageIndex, page);
     //    nodeSize ++;
   }
 

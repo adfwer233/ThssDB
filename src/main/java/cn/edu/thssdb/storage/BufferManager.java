@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class BufferManager {
-  public static final Integer BufferSize = 5000;
+  public static final Integer BufferSize = 1000;
 
   private final String tableName;
   private final String tableDir;
@@ -20,6 +20,12 @@ public class BufferManager {
 
   ArrayList<Boolean> writeFlag = new ArrayList<>();
 
+  boolean folderExist = false;
+  int readHit = 0;
+  int readTotal = 0;
+  int writeHit = 0;
+  int writeTotal = 0;
+
   public BufferManager(Table table) {
     tableName = table.tableName;
     tableDir = table.getTableFolderPath();
@@ -27,16 +33,19 @@ public class BufferManager {
   }
 
   private void writeIO(Integer index, ArrayList<Row> page) {
-    //    System.out.printf(
-    //        "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
-    //        buffer.size(),
-    //        tableName,
-    //        Runtime.getRuntime().maxMemory(),
-    //        Runtime.getRuntime().totalMemory());
+    //        System.out.printf(
+    //            "[Page IO WRITE] [BUFFER SIZE %d] %s %d %d %n",
+    //            buffer.size(),
+    //            tableName,
+    //            Runtime.getRuntime().maxMemory(),
+    //            Runtime.getRuntime().totalMemory());
     //    System.out.flush();
     File folder = new File(tableDir);
-    if (!folder.exists()) {
-      folder.mkdirs();
+    if (!folderExist) {
+      if (!folder.exists()) {
+        folder.mkdirs();
+      }
+      folderExist = true;
     }
 
     File pagePath = new File(getPagePath(index));
@@ -88,8 +97,11 @@ public class BufferManager {
 
   private ArrayList<Row> getPage(Integer pageIndex) {
     File folder = new File(tableDir);
-    if (!folder.exists()) {
-      folder.mkdirs();
+
+    if (!folderExist) {
+      if (!folder.exists()) {
+        folder.mkdirs();
+      }
     }
 
     File pagePath = new File(getPagePath(pageIndex));
@@ -137,7 +149,10 @@ public class BufferManager {
      * replace the current buffered page
      * set the dirty flag
      * */
+    //    System.out.printf("[WRITE STAT %d %d]%n", writeHit, writeTotal);
+    writeTotal++;
     if (bufferPageIndex.contains(pageIndex)) {
+      writeHit += 1;
       buffer.set(bufferPageIndex.indexOf(pageIndex), data);
       writeFlag.set(bufferPageIndex.indexOf(pageIndex), true);
       assert buffer.size() == bufferPageIndex.size();
@@ -164,8 +179,12 @@ public class BufferManager {
     /*
      * If page in buffer, just return it
      * */
+    //    System.out.printf("[READ STAT %d %d]%n", readHit, readTotal);
+
+    readTotal++;
     synchronized (this) {
       if (bufferPageIndex.contains(pageIndex)) {
+        readHit++;
         //      System.out.println(String.format("[Page READ buffered] %s %s", pageIndex,
         // tableName));
         assert buffer.size() == bufferPageIndex.size();

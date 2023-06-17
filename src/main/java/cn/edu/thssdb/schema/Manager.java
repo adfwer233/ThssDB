@@ -115,8 +115,11 @@ public class Manager {
         database.transactionLockManagers.put(
             tmpSessionId, new TransactionLockManager(tmpSessionId));
         currentDatabaseName.put(tmpSessionId, database.getName());
+
         // recover from log
         ArrayList<String> logs = database.logger.readLog();
+        Boolean enableRollback = Global.ENABLE_ROLLBACK;
+        Global.ENABLE_ROLLBACK = false;
         for (String log : logs) {
           System.out.println("Recover: " + log);
           System.out.println(currentDatabaseName);
@@ -124,6 +127,7 @@ public class Manager {
           // only single transaction logger-based recovery supported
           PlanHandler.handlePlan(plan, tmpSessionId, this);
         }
+        Global.ENABLE_ROLLBACK = enableRollback;
       }
       bufferedReader.close();
       inputStreamReader.close();

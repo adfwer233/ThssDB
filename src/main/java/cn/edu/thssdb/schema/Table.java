@@ -130,7 +130,7 @@ public class Table implements Iterable<Row> {
       File tableFolder = new File(getTableFolderPath());
       if (!tableFolder.exists()) tableFolder.mkdirs();
 
-      File tableFile = new File(getTablePath());
+      File tableFile = new File(getTableIndexPath());
       if (!tableFile.exists()) return;
 
       FileInputStream fileInputStream = new FileInputStream(tableFile);
@@ -147,13 +147,19 @@ public class Table implements Iterable<Row> {
       fileInputStream.close();
 
       // recover the b+tree in memory
+
+      System.out.println(res.indexList);
+
       for (Integer index : res.indexList) {
         ArrayList<Row> page = this.index.bufferManager.readPage(index);
+        System.out.println(page);
         for (Row row : page) {
           Entry primary = row.getEntries().get(this.primaryIndex);
           this.index.put(primary, new Record());
         }
       }
+
+      System.out.println(this.printTable());
     } catch (Exception e) {
       System.out.println(e.getMessage());
     }
@@ -193,7 +199,6 @@ public class Table implements Iterable<Row> {
           objectOutputStream.writeObject(index.pageCounter);
 
           objectOutputStream.close();
-          bufferedOutputStream.flush();
           bufferedOutputStream.close();
         }
       } catch (Exception e) {
